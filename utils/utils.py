@@ -1,20 +1,26 @@
 from pathlib import Path
 import numpy as np
 import torch
+from numpy import ndarray
 from pydicom import dcmread
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from scipy.interpolate import CubicSpline
+from torch.autograd import Variable
 
 path = Path().resolve().parents[2] / "dane" / "KARDIO ZAMKNIETE" / "A001" / "DICOM" / "P1" / "E1" / "S1"
 
 
-def get_data(data_path: Path) -> np.ndarray:
+def get_data(data_path: Path, skip_index: np.ndarray = np.concatenate((np.arange(61, 67), np.arange(68, 78),
+                                                                       np.arange(79, 89), np.arange(90, 100),
+                                                                       np.arange(101, 111), np.arange(113, 123),
+                                                                       np.arange(124, 132)), axis=0)) -> np.ndarray:
     """
     Return array with CT image data
 
     Parameters
     ----------
+    skip_index
     data_path : Path
         Path to folder with data
 
@@ -23,10 +29,12 @@ def get_data(data_path: Path) -> np.ndarray:
     `np.ndarray`
 
     """
-    return np.stack([np.flip(dcmread(file).pixel_array) for file in data_path.iterdir()], axis=0)
+    return np.stack(
+        [np.flip(dcmread(file).pixel_array) for idx, file in enumerate(data_path.iterdir()) if idx not in skip_index],
+        axis=0)
 
 
-def get_rect_ROI(image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True) -> np.ndarray:
+def get_rect_ROI(image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True, ax  = None) -> np.ndarray:
     """
 
     Parameters
@@ -45,18 +53,28 @@ def get_rect_ROI(image: np.ndarray, x: int, y: int, size: int, num: int, plot: b
     rect_size = int(np.sqrt(num))
     ROI_arr = np.empty((rect_size * rect_size, size, size))
     if plot:
-        plt.pcolormesh(image)
-        plt.colorbar()
-        plt.title("Selected ROIs")
+        if ax is None:
+            plt.pcolormesh(image)
+            plt.colorbar()
+            plt.title("Selected ROIs")
+        else:
+            ax.pcolormesh(image)
     for i in range(num):
         yy = y + size * (i % rect_size)
         if i % rect_size == 0:
             xx = x + size * (i // rect_size)
         if plot:
-            plt.gca().add_patch(Rectangle((xx - size // 2, yy - size // 2), size, size,
-                                          edgecolor='red',
-                                          facecolor='none',
-                                          lw=1))
+            if ax is None:
+                plt.gca().add_patch(Rectangle((xx - size // 2, yy - size // 2), size, size,
+                                              edgecolor='red',
+                                              facecolor='none',
+                                              lw=1))
+            else:
+                ax.add_patch(Rectangle((xx - size // 2, yy - size // 2), size, size,
+                                              edgecolor='red',
+                                              facecolor='none',
+                                              lw=1))
+
         ROI_arr[i] = image[yy - size // 2:yy + size // 2, xx - size // 2:xx + size // 2]
     return ROI_arr
 
@@ -132,7 +150,7 @@ def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.40
 
 
 def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: str,
-              min_x: float = 0, max_x: float = 1.0, num: int = 64):
+              min_x: float = 0, max_x: float = 1.0, num: int = 64, ax = None):
     """
 
     Parameters
@@ -151,14 +169,24 @@ def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: st
     """
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline = CubicSpline(x_points, y_points)
-    plt.plot(x_points, y_points, '.')
-    plt.plot(x_interpolate, cubic_spline(x_interpolate), color='blue', label=legend)
-    plt.title(title)
-    plt.legend()
-    plt.xlabel("$f_{r} [mm^{-1}]$")
-    plt.xlim(min_x, max_x)
-    plt.grid(which="minor", alpha=0.3)
-    plt.grid(which="major", alpha=0.7)
+    if ax is None:
+        plt.plot(x_points, y_points, '.')
+        plt.plot(x_interpolate, cubic_spline(x_interpolate), color='blue', label=legend)
+        plt.title(title)
+        plt.legend()
+        plt.xlabel("$f_{r} [mm^{-1}]$")
+        plt.xlim(min_x, max_x)
+        plt.grid(which="minor", alpha=0.3)
+        plt.grid(which="major", alpha=0.7)
+    else:
+        ax.plot(x_points, y_points, '.')
+        ax.plot(x_interpolate, cubic_spline(x_interpolate), color='blue', label=legend)
+        ax.set_title(title)
+        ax.legend()
+        ax.set_xlabel("$f_{r} [mm^{-1}]$")
+        ax.set_xlim(min_x, max_x)
+        ax.grid(which="minor", alpha=0.3)
+        ax.grid(which="major", alpha=0.7)
 
 
 def make_two_plots(x_points_1: np.ndarray, y_points_1: np.ndarray, x_points_2: np.ndarray, y_points_2: np.ndarray,
@@ -196,6 +224,37 @@ def make_two_plots(x_points_1: np.ndarray, y_points_1: np.ndarray, x_points_2: n
     plt.grid(which="major", alpha=0.7)
 
 
+def make_evaluate_plot(img_noise, img_denoised):
+    # Create a 2x2 grid of subplots
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
+
+    # Plot the data on each subplot
+    ROI_array_rectangle_noise = get_rect_ROI(image=np.flipud(img_noise), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 0])
+    axes[0, 0].set_title('Noise image')
+
+    ROI_array_rectangle_denoised = get_rect_ROI(image=np.flipud(img_denoised), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 1])
+    axes[0, 1].set_title('Denoised image')
+
+    NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
+    rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
+
+    make_plot(rad_noise,intensity_noise, title="CT Scan - rectangle ROI of orignal image", legend=" NPS 1D", min_x=0,
+              max_x=1.0, num=64, ax= axes[1, 0])
+    axes[1, 0].set_title('NPS 1D noised image')
+
+    NPS_2D_rectangle_denoised = get_NPS_2D(ROI_array_rectangle_denoised)
+    rad_denoise, intensity_denoised = get_NPS_1D(NPS_2D_rectangle_denoised)
+    make_plot(rad_denoise, intensity_denoised , title="CT Scan - rectangle ROI of orignal image", legend=" NPS 1D", min_x=0,
+              max_x=1.0, num=64, ax=axes[1, 1])
+    axes[1, 1].set_title('NPS 1 denoised image')
+
+    plt.tight_layout()
+
+    # Show the plots
+    plt.show()
+    return rad_noise,intensity_noise,rad_denoise, intensity_denoised
+
+
 def np_to_torch(np_array):
     return torch.from_numpy(np_array).float()
 
@@ -208,9 +267,26 @@ def save_array(np_array: np.ndarray, file_name: str, file_path: Path = Path().re
     with open(file_path / file_name, 'wb') as f:
         np.save(f, np_array)
 
+
 def load_array(file_name):
     return np.load(Path('output') / file_name)
 
+
+def add_noise(image, noise_level=0.1):
+    """
+    Add random Gaussian noise to the input image.
+
+    Parameters:
+        image (torch.Tensor): Input image.
+        noise_level (float): Level of noise to be added.
+
+    Returns:
+        torch.Tensor: Noisy image.
+    """
+    noise = Variable(image.data.new(image.size()).normal_(0, 0.05)*0.5)
+    noisy_image = image + noise
+
+    return noisy_image, noise
 
 
 if __name__ == '__main__':

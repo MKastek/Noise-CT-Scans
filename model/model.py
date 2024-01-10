@@ -1,17 +1,18 @@
 import torch.nn as nn
 import torch
 from base import BaseModel
+from torchsummary import summary
 
 
-class CNNConfigurable(BaseModel):
-    def __init__(self, n_layers, n_channels, k_size):
-        super(CNNConfigurable, self).__init__()
+class CNN_DIP(BaseModel):
+    def __init__(self, n_layers=16, n_channels=100, k_size=3):
+        super(CNN_DIP, self).__init__()
         pd = int(k_size / 2)
-        layers = [nn.Conv2d(1, n_channels, k_size, padding=pd), nn.PReLU()]
+        layers = [nn.Conv2d(1, n_channels, (k_size,k_size), padding=pd), nn.PReLU()]
         for _ in range(n_layers):
-            layers.append(nn.Conv2d(n_channels, n_channels, k_size, padding=pd))
+            layers.append(nn.Conv2d(n_channels, n_channels, (k_size, k_size), padding=pd))
             layers.append(nn.PReLU())
-        layers.append(nn.Conv2d(n_channels, 1, k_size, padding=pd))
+        layers.append(nn.Conv2d(n_channels, 1, (k_size, k_size), padding=pd))
         layers.append(nn.PReLU())
 
         self.deep_net = nn.Sequential(*layers)
@@ -20,34 +21,24 @@ class CNNConfigurable(BaseModel):
         return torch.squeeze(self.deep_net(x.unsqueeze(0).unsqueeze(0)))
 
 
-class UNet(nn.Module):
+class DnCNN(nn.Module):
     def __init__(self):
-        super(UNet, self).__init__()
-
-        # Encoder
-        self.encoder = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=(3,3), padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=(3,3), padding=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-
-        # Decoder
-        self.decoder = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=(3,3), padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 1, kernel_size=(3,3), padding=1),
-            nn.ReLU(inplace=True),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        )
+        super(DnCNN, self).__init__()
+        # in layer
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=(3,3), padding=1, bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+        # hidden layers
+        hidden_layers = []
+        for i in range(18):
+          hidden_layers.append(nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(3,3), padding=1, bias=False))
+          hidden_layers.append(nn.BatchNorm2d(64))
+          hidden_layers.append(nn.ReLU(inplace=True))
+        self.mid_layer = nn.Sequential(*hidden_layers)
+        # out layer
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=1, kernel_size=(3,3), padding=1, bias=False)
 
     def forward(self, x):
-        # Encoder
-        x1 = self.encoder(x)
-
-        # Decoder
-        x = self.decoder(x1)
-
-        return x
-
+        out = self.relu1(self.conv1(x))
+        out = self.mid_layer(out)
+        out = self.conv3(out)
+        return out
