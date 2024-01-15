@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 
 
 def get_denoised_image_DIP(
-    reference_image,
-    input_random_image,
+    reference_image: np.array,
+    input_random_image: np.array,
     model,
-    epochs,
-    plot,
-    output_filename="DIP_model",
+    epochs:int,
+    plot: bool,
+    output_filename:str="DIP_model",
 ):
     """
 

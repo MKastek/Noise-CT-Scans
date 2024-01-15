@@ -15,8 +15,8 @@ def train(
     train_loader,
     criterion,
     optimizer,
-    num_epochs=10,
-    output_filename="CNN_model",
+    num_epochs: int=10,
+    output_filename: str="CNN_model",
 ):
     """
 

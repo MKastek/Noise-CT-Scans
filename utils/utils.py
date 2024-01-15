@@ -37,17 +37,6 @@ def get_data(
 ) -> np.ndarray:
     """
     Return array with CT image data
-
-    Parameters
-    ----------
-    skip_index
-    data_path : Path
-        Path to folder with data
-
-    Returns
-    -------
-    `np.ndarray`
-
     """
     return np.stack(
         [
@@ -63,18 +52,6 @@ def get_rect_ROI(
     image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True, ax=None
 ) -> np.ndarray:
     """
-
-    Parameters
-    ----------
-    image
-    x
-    y
-    size
-    num
-    plot
-
-    Returns
-    -------
 
     """
     rect_size = int(np.sqrt(num))
@@ -166,19 +143,10 @@ def get_NPS_1D(
 ) -> tuple[np.ndarray, np.ndarray]:
     """
 
-    Parameters
-    ----------
-    NPS_2D
-    size_of_pixel_in_spatial_domain
-
-    Returns
-    -------
-
     """
     cen_x = NPS_2D.shape[1] // 2
     cen_y = NPS_2D.shape[1] // 2
 
-    # Find radial distances
     [X, Y] = np.meshgrid(
         np.arange(NPS_2D.shape[1]) - cen_x, np.arange(NPS_2D.shape[1]) - cen_y
     )
@@ -216,19 +184,6 @@ def make_plot(
 ):
     """
 
-    Parameters
-    ----------
-    x_points
-    y_points
-    title
-    legend
-    min_x
-    max_x
-    num
-
-    Returns
-    -------
-
     """
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline = CubicSpline(x_points, y_points)
@@ -265,22 +220,6 @@ def make_two_plots(
     num: int = 64,
 ):
     """
-
-    Parameters
-    ----------
-    x_points_1
-    y_points_1
-    x_points_2
-    y_points_2
-    title
-    legend_1
-    legend_2
-    min_x
-    max_x
-    num
-
-    Returns
-    -------
 
     """
     x_interpolate = np.linspace(min_x, max_x, num)
@@ -375,18 +314,11 @@ def load_array(file_name):
     return np.load(Path("output") / file_name)
 
 
-def add_noise(image, noise_level=0.1):
+def add_noise(image, noise_level=0.05):
     """
     Add random Gaussian noise to the input image.
-
-    Parameters:
-        image (torch.Tensor): Input image.
-        noise_level (float): Level of noise to be added.
-
-    Returns:
-        torch.Tensor: Noisy image.
     """
-    noise = Variable(image.data.new(image.size()).normal_(0, 0.05) * 0.5)
+    noise = Variable(image.data.new(image.size()).normal_(0, noise_level) * 0.5)
     noisy_image = image + noise
 
     return noisy_image, noise
@@ -398,6 +330,9 @@ def get_max(data_path: Path):
 
 
 def nrmse(recon_img, reference_img):
+    """
+
+    """
     n = (reference_img - recon_img) ** 2
     den = reference_img ** 2
     return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
