@@ -7,8 +7,30 @@ from utils import np_to_torch, torch_to_np, save_array, get_data, get_noise, nrm
 import matplotlib.pyplot as plt
 
 
-def get_denoised_image_DIP(reference_image, input_random_image, model, epochs, plot, output_filename="DIP_model"):
-    device = torch.device('cpu')
+def get_denoised_image_DIP(
+    reference_image,
+    input_random_image,
+    model,
+    epochs,
+    plot,
+    output_filename="DIP_model",
+):
+    """
+
+    Parameters
+    ----------
+    reference_image
+    input_random_image
+    model
+    epochs
+    plot
+    output_filename
+
+    Returns
+    -------
+
+    """
+    device = torch.device("cpu")
     image_torch = np_to_torch(reference_image).to(device)
     model_dip = model.to(device)
     input_image = input_random_image.to(device)
@@ -32,7 +54,7 @@ def get_denoised_image_DIP(reference_image, input_random_image, model, epochs, p
             axs[1, 0].cla()
             axs[1, 0].set_title(f"Loss epoch:{ep}")
             axs[1, 0].plot(train_loss)
-            ax2.plot(train_noise, color='r', label='cos(x)')
+            ax2.plot(train_noise, color="r", label="cos(x)")
             axs[1, 0].grid()
             axs[1, 1].set_title("Orginal image")
             axs[1, 1].imshow(image_torch)
@@ -41,17 +63,29 @@ def get_denoised_image_DIP(reference_image, input_random_image, model, epochs, p
     output_image_np = torch_to_np(output_image)
     save_array(output_image_np, f"denoised_image_{epochs}.npy")
     save_array(reference_image, f"orginal_image_{epochs}.npy")
-    torch.save(model, Path().resolve().parents[0] / 'model' / f"{output_filename}.pt")
+    torch.save(
+        model, Path().resolve().parents[0] / "model" / "saved" / f"{output_filename}.pt"
+    )
     return output_image_np
 
 
-if __name__ == '__main__':
-    print( Path().resolve().parents[0])
-    path = Path().resolve().parents[2] / "dane" / "KARDIO ZAMKNIETE" / "A001" / "DICOM" / "P1" / "E1" / "S1"
+if __name__ == "__main__":
+    path = (
+        Path().resolve().parents[2]
+        / "dane"
+        / "KARDIO ZAMKNIETE"
+        / "A001"
+        / "DICOM"
+        / "P1"
+        / "E1"
+        / "S1"
+    )
     images = get_data(path)
     roi_images = np.array([image[30:130, 250:350] for image in images])
-    roi_image = roi_images[220]
+    roi_image = roi_images[220] / np.max(roi_images[220])
     input_random_image = torch.rand(100, 100)
     model = CNN_DIP(16, 100, 3)
     epochs = 5000
-    output_image = get_denoised_image_DIP(roi_image, input_random_image, model, epochs, True)
+    output_image = get_denoised_image_DIP(
+        roi_image, input_random_image, model, epochs, True
+    )

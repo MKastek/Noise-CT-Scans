@@ -8,13 +8,33 @@ from matplotlib.patches import Rectangle
 from scipy.interpolate import CubicSpline
 from torch.autograd import Variable
 
-path = Path().resolve().parents[2] / "dane" / "KARDIO ZAMKNIETE" / "A001" / "DICOM" / "P1" / "E1" / "S1"
+path = (
+    Path().resolve().parents[2]
+    / "dane"
+    / "KARDIO ZAMKNIETE"
+    / "A001"
+    / "DICOM"
+    / "P1"
+    / "E1"
+    / "S1"
+)
 
 
-def get_data(data_path: Path, skip_index: np.ndarray = np.concatenate((np.arange(61, 67), np.arange(68, 78),
-                                                                       np.arange(79, 89), np.arange(90, 100),
-                                                                       np.arange(101, 111), np.arange(113, 123),
-                                                                       np.arange(124, 132)), axis=0)) -> np.ndarray:
+def get_data(
+    data_path: Path,
+    skip_index: np.ndarray = np.concatenate(
+        (
+            np.arange(61, 67),
+            np.arange(68, 78),
+            np.arange(79, 89),
+            np.arange(90, 100),
+            np.arange(101, 111),
+            np.arange(113, 123),
+            np.arange(124, 132),
+        ),
+        axis=0,
+    ),
+) -> np.ndarray:
     """
     Return array with CT image data
 
@@ -30,11 +50,18 @@ def get_data(data_path: Path, skip_index: np.ndarray = np.concatenate((np.arange
 
     """
     return np.stack(
-        [np.flip(dcmread(file).pixel_array) for idx, file in enumerate(data_path.iterdir()) if idx not in skip_index],
-        axis=0)
+        [
+            np.flip(dcmread(file).pixel_array)
+            for idx, file in enumerate(data_path.iterdir())
+            if idx not in skip_index
+        ],
+        axis=0,
+    )
 
 
-def get_rect_ROI(image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True, ax  = None) -> np.ndarray:
+def get_rect_ROI(
+    image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True, ax=None
+) -> np.ndarray:
     """
 
     Parameters
@@ -65,21 +92,37 @@ def get_rect_ROI(image: np.ndarray, x: int, y: int, size: int, num: int, plot: b
             xx = x + size * (i // rect_size)
         if plot:
             if ax is None:
-                plt.gca().add_patch(Rectangle((xx - size // 2, yy - size // 2), size, size,
-                                              edgecolor='red',
-                                              facecolor='none',
-                                              lw=1))
+                plt.gca().add_patch(
+                    Rectangle(
+                        (xx - size // 2, yy - size // 2),
+                        size,
+                        size,
+                        edgecolor="red",
+                        facecolor="none",
+                        lw=1,
+                    )
+                )
             else:
-                ax.add_patch(Rectangle((xx - size // 2, yy - size // 2), size, size,
-                                              edgecolor='red',
-                                              facecolor='none',
-                                              lw=1))
+                ax.add_patch(
+                    Rectangle(
+                        (xx - size // 2, yy - size // 2),
+                        size,
+                        size,
+                        edgecolor="red",
+                        facecolor="none",
+                        lw=1,
+                    )
+                )
 
-        ROI_arr[i] = image[yy - size // 2:yy + size // 2, xx - size // 2:xx + size // 2]
+        ROI_arr[i] = image[
+            yy - size // 2 : yy + size // 2, xx - size // 2 : xx + size // 2
+        ]
     return ROI_arr
 
 
-def get_NPS_2D(ROI_arr: np.ndarray, pixel_size_x: float = 0.402, pixel_size_y: float = 0.402):
+def get_NPS_2D(
+    ROI_arr: np.ndarray, pixel_size_x: float = 0.402, pixel_size_y: float = 0.402
+):
     """
 
     Parameters
@@ -111,10 +154,16 @@ def get_NPS_2D(ROI_arr: np.ndarray, pixel_size_x: float = 0.402, pixel_size_y: f
     N = len(NPS_array)
     Ly = NPS_array[0].shape[0]
     Lx = NPS_array[0].shape[1]
-    return (1 / N) * (1 / (Lx * Ly)) * (np.sum(NPS_array, axis=0) * pixel_size_x * pixel_size_y)
+    return (
+        (1 / N)
+        * (1 / (Lx * Ly))
+        * (np.sum(NPS_array, axis=0) * pixel_size_x * pixel_size_y)
+    )
 
 
-def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.402) -> tuple[np.ndarray, np.ndarray]:
+def get_NPS_1D(
+    NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.402
+) -> tuple[np.ndarray, np.ndarray]:
     """
 
     Parameters
@@ -130,7 +179,9 @@ def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.40
     cen_y = NPS_2D.shape[1] // 2
 
     # Find radial distances
-    [X, Y] = np.meshgrid(np.arange(NPS_2D.shape[1]) - cen_x, np.arange(NPS_2D.shape[1]) - cen_y)
+    [X, Y] = np.meshgrid(
+        np.arange(NPS_2D.shape[1]) - cen_x, np.arange(NPS_2D.shape[1]) - cen_y
+    )
     R = np.sqrt(np.square(X) + np.square(Y))
 
     rad = np.arange(0, np.max(R), 1)
@@ -139,7 +190,7 @@ def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.40
     bin_size = 1
 
     for i in rad:
-        mask = (np.greater(R, i - bin_size) & np.less(R, i + bin_size))
+        mask = np.greater(R, i - bin_size) & np.less(R, i + bin_size)
         rad_values = NPS_2D[mask]
         intensity[index] = np.mean(rad_values)
         index += 1
@@ -152,8 +203,17 @@ def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.40
 def get_noise(NPS_2D: np.ndarray):
     return np.sqrt(np.trapz(np.trapz(NPS_2D, axis=0), axis=0))
 
-def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: str,
-              min_x: float = 0, max_x: float = 1.0, num: int = 64, ax = None):
+
+def make_plot(
+    x_points: np.ndarray,
+    y_points: np.ndarray,
+    title: str,
+    legend: str,
+    min_x: float = 0,
+    max_x: float = 1.0,
+    num: int = 64,
+    ax=None,
+):
     """
 
     Parameters
@@ -173,8 +233,8 @@ def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: st
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline = CubicSpline(x_points, y_points)
     if ax is None:
-        plt.plot(x_points, y_points, '.')
-        plt.plot(x_interpolate, cubic_spline(x_interpolate), color='blue', label=legend)
+        plt.plot(x_points, y_points, ".")
+        plt.plot(x_interpolate, cubic_spline(x_interpolate), color="blue", label=legend)
         plt.title(title)
         plt.legend()
         plt.xlabel("$f_{r} [mm^{-1}]$")
@@ -182,8 +242,8 @@ def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: st
         plt.grid(which="minor", alpha=0.3)
         plt.grid(which="major", alpha=0.7)
     else:
-        ax.plot(x_points, y_points, '.')
-        ax.plot(x_interpolate, cubic_spline(x_interpolate), color='blue', label=legend)
+        ax.plot(x_points, y_points, ".")
+        ax.plot(x_interpolate, cubic_spline(x_interpolate), color="blue", label=legend)
         ax.set_title(title)
         ax.legend()
         ax.set_xlabel("$f_{r} [mm^{-1}]$")
@@ -192,8 +252,18 @@ def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: st
         ax.grid(which="major", alpha=0.7)
 
 
-def make_two_plots(x_points_1: np.ndarray, y_points_1: np.ndarray, x_points_2: np.ndarray, y_points_2: np.ndarray,
-                   title: str, legend_1: str, legend_2: str, min_x: float = 0, max_x: float = 1.0, num: int = 64):
+def make_two_plots(
+    x_points_1: np.ndarray,
+    y_points_1: np.ndarray,
+    x_points_2: np.ndarray,
+    y_points_2: np.ndarray,
+    title: str,
+    legend_1: str,
+    legend_2: str,
+    min_x: float = 0,
+    max_x: float = 1.0,
+    num: int = 64,
+):
     """
 
     Parameters
@@ -216,8 +286,8 @@ def make_two_plots(x_points_1: np.ndarray, y_points_1: np.ndarray, x_points_2: n
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline_1 = CubicSpline(x_points_1, y_points_1)
     cubic_spline_2 = CubicSpline(x_points_2, y_points_2)
-    plt.plot(x_points_1, y_points_1, '.')
-    plt.plot(x_points_2, y_points_2, '.')
+    plt.plot(x_points_1, y_points_1, ".")
+    plt.plot(x_points_2, y_points_2, ".")
     plt.plot(x_interpolate, cubic_spline_1(x_interpolate), label=legend_1)
     plt.plot(x_interpolate, cubic_spline_2(x_interpolate), label=legend_2)
     plt.legend()
@@ -232,30 +302,56 @@ def make_evaluate_plot(img_noise, img_denoised):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
 
     # Plot the data on each subplot
-    ROI_array_rectangle_noise = get_rect_ROI(image=np.flipud(img_noise), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 0])
-    axes[0, 0].set_title('Noise image')
+    ROI_array_rectangle_noise = get_rect_ROI(
+        image=np.flipud(img_noise), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 0]
+    )
+    axes[0, 0].set_title("Noise image")
 
-    ROI_array_rectangle_denoised = get_rect_ROI(image=np.flipud(img_denoised), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 1])
-    axes[0, 1].set_title('Denoised image')
+    ROI_array_rectangle_denoised = get_rect_ROI(
+        image=np.flipud(img_denoised),
+        y=55,
+        x=55,
+        size=8,
+        num=9,
+        plot=True,
+        ax=axes[0, 1],
+    )
+    axes[0, 1].set_title("Denoised image")
 
     NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
     rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
 
-    make_plot(rad_noise,intensity_noise, title="CT Scan - rectangle ROI of orignal image", legend=" NPS 1D", min_x=0,
-              max_x=1.0, num=64, ax= axes[1, 0])
-    axes[1, 0].set_title('NPS 1D noised image')
+    make_plot(
+        rad_noise,
+        intensity_noise,
+        title="CT Scan - rectangle ROI of orignal image",
+        legend=" NPS 1D",
+        min_x=0,
+        max_x=1.0,
+        num=64,
+        ax=axes[1, 0],
+    )
+    axes[1, 0].set_title("NPS 1D noised image")
 
     NPS_2D_rectangle_denoised = get_NPS_2D(ROI_array_rectangle_denoised)
     rad_denoise, intensity_denoised = get_NPS_1D(NPS_2D_rectangle_denoised)
-    make_plot(rad_denoise, intensity_denoised , title="CT Scan - rectangle ROI of orignal image", legend=" NPS 1D", min_x=0,
-              max_x=1.0, num=64, ax=axes[1, 1])
-    axes[1, 1].set_title('NPS 1 denoised image')
+    make_plot(
+        rad_denoise,
+        intensity_denoised,
+        title="CT Scan - rectangle ROI of orignal image",
+        legend=" NPS 1D",
+        min_x=0,
+        max_x=1.0,
+        num=64,
+        ax=axes[1, 1],
+    )
+    axes[1, 1].set_title("NPS 1 denoised image")
 
     plt.tight_layout()
 
     # Show the plots
     plt.show()
-    return rad_noise,intensity_noise,rad_denoise, intensity_denoised
+    return rad_noise, intensity_noise, rad_denoise, intensity_denoised
 
 
 def np_to_torch(np_array):
@@ -266,13 +362,17 @@ def torch_to_np(torch_array):
     return np.squeeze(torch_array.detach().cpu().numpy())
 
 
-def save_array(np_array: np.ndarray, file_name: str, file_path: Path = Path().resolve().parents[0] / "output" / "data"):
-    with open(file_path / file_name, 'wb') as f:
+def save_array(
+    np_array: np.ndarray,
+    file_name: str,
+    file_path: Path = Path().resolve().parents[0] / "output" / "data",
+):
+    with open(file_path / file_name, "wb") as f:
         np.save(f, np_array)
 
 
 def load_array(file_name):
-    return np.load(Path('output') / file_name)
+    return np.load(Path("output") / file_name)
 
 
 def add_noise(image, noise_level=0.1):
@@ -286,7 +386,7 @@ def add_noise(image, noise_level=0.1):
     Returns:
         torch.Tensor: Noisy image.
     """
-    noise = Variable(image.data.new(image.size()).normal_(0, 0.05)*0.5)
+    noise = Variable(image.data.new(image.size()).normal_(0, 0.05) * 0.5)
     noisy_image = image + noise
 
     return noisy_image, noise
@@ -297,19 +397,32 @@ def get_max(data_path: Path):
     return np.max(images)
 
 
-def nrmse(recon, reference):
-    n = (reference - recon) ** 2
-    den = reference ** 2
+def nrmse(recon_img, reference_img):
+    n = (reference_img - recon_img) ** 2
+    den = reference_img ** 2
     return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     image = get_data(path)[200]
-    ROI_array_rectangle = get_rect_ROI(image=image, y=188, x=60, size=16, num=9, plot=True)
+    plt.imshow(image[20:120, 250:350])
+    plt.show()
+    ROI_array_rectangle = get_rect_ROI(
+        image=image, y=188, x=60, size=16, num=9, plot=True
+    )
     plt.show()
     NPS_2D_rectangle = get_NPS_2D(ROI_array_rectangle)
     print(get_noise(NPS_2D_rectangle))
     plt.imshow(NPS_2D_rectangle)
     plt.show()
     radius, intensity = get_NPS_1D(NPS_2D_rectangle)
-    make_plot(radius, intensity, title="CT Scan - rectangle ROI", legend=" NPS 1D", min_x=0, max_x=1.0, num=64)
+    make_plot(
+        radius,
+        intensity,
+        title="CT Scan - rectangle ROI",
+        legend=" NPS 1D",
+        min_x=0,
+        max_x=1.0,
+        num=64,
+    )
     plt.show()
