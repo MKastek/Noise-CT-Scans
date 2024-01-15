@@ -21,7 +21,7 @@ class CNN_DIP(BaseModel):
         return torch.squeeze(self.deep_net(x.unsqueeze(0).unsqueeze(0)))
 
 
-class DnCNN(nn.Module):
+class DnCNN(BaseModel):
     def __init__(self):
         super(DnCNN, self).__init__()
         # in layer

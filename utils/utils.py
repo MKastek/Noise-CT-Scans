@@ -149,6 +149,9 @@ def get_NPS_1D(NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.40
     return x, y
 
 
+def get_noise(NPS_2D: np.ndarray):
+    return np.sqrt(np.trapz(np.trapz(NPS_2D, axis=0), axis=0))
+
 def make_plot(x_points: np.ndarray, y_points: np.ndarray, title: str, legend: str,
               min_x: float = 0, max_x: float = 1.0, num: int = 64, ax = None):
     """
@@ -289,11 +292,24 @@ def add_noise(image, noise_level=0.1):
     return noisy_image, noise
 
 
+def get_max(data_path: Path):
+    images = get_data(data_path)
+    return np.max(images)
+
+
+def nrmse(recon, reference):
+    n = (reference - recon) ** 2
+    den = reference ** 2
+    return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
+
 if __name__ == '__main__':
     image = get_data(path)[200]
     ROI_array_rectangle = get_rect_ROI(image=image, y=188, x=60, size=16, num=9, plot=True)
     plt.show()
     NPS_2D_rectangle = get_NPS_2D(ROI_array_rectangle)
+    print(get_noise(NPS_2D_rectangle))
+    plt.imshow(NPS_2D_rectangle)
+    plt.show()
     radius, intensity = get_NPS_1D(NPS_2D_rectangle)
     make_plot(radius, intensity, title="CT Scan - rectangle ROI", legend=" NPS 1D", min_x=0, max_x=1.0, num=64)
     plt.show()

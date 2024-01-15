@@ -2,9 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from loss import nrmse
 from model import CNN_DIP
-from utils import np_to_torch, torch_to_np, save_array, get_data
+from utils import np_to_torch, torch_to_np, save_array, get_data, get_noise, nrmse
 import matplotlib.pyplot as plt
 
 
@@ -14,15 +13,15 @@ def get_denoised_image_DIP(reference_image, input_random_image, model, epochs, p
     model_dip = model.to(device)
     input_image = input_random_image.to(device)
     optimiser = torch.optim.Adam(model_dip.parameters(), lr=1e-4)
-    train_loss = list()
+    train_loss, train_noise = list(), list()
     fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+    ax2 = axs[1, 0].twinx()
     for ep in range(epochs):
         optimiser.zero_grad()
         output_image = model_dip(input_image)
-
         loss = nrmse(output_image, image_torch)
-
         train_loss.append(loss.item())
+        train_noise.append(get_noise(torch_to_np(output_image)))
         loss.backward()
         optimiser.step()
         if ep % 4 == 0 and plot == True:
@@ -33,6 +32,7 @@ def get_denoised_image_DIP(reference_image, input_random_image, model, epochs, p
             axs[1, 0].cla()
             axs[1, 0].set_title(f"Loss epoch:{ep}")
             axs[1, 0].plot(train_loss)
+            ax2.plot(train_noise, color='r', label='cos(x)')
             axs[1, 0].grid()
             axs[1, 1].set_title("Orginal image")
             axs[1, 1].imshow(image_torch)
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     path = Path().resolve().parents[2] / "dane" / "KARDIO ZAMKNIETE" / "A001" / "DICOM" / "P1" / "E1" / "S1"
     images = get_data(path)
     roi_images = np.array([image[30:130, 250:350] for image in images])
-    roi_image = roi_images[200]
+    roi_image = roi_images[220]
     input_random_image = torch.rand(100, 100)
     model = CNN_DIP(16, 100, 3)
-    epochs = 20
+    epochs = 5000
     output_image = get_denoised_image_DIP(roi_image, input_random_image, model, epochs, True)
