@@ -135,7 +135,7 @@ def get_NPS_1D(
     """
     Return array with radial frequency and Noise Power Spectrum 1D values
     """
-    cen_x = NPS_2D.shape[1] // 2
+    cen_x = NPS_2D.shape[0] // 2
     cen_y = NPS_2D.shape[1] // 2
 
     [X, Y] = np.meshgrid(
