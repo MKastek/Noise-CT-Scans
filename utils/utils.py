@@ -52,7 +52,7 @@ def get_rect_ROI(
     image: np.ndarray, x: int, y: int, size: int, num: int, plot: bool = True, ax=None
 ) -> np.ndarray:
     """
-
+    Return array rectangular region of interest (ROIs)
     """
     rect_size = int(np.sqrt(num))
     ROI_arr = np.empty((rect_size * rect_size, size, size))
@@ -101,16 +101,7 @@ def get_NPS_2D(
     ROI_arr: np.ndarray, pixel_size_x: float = 0.402, pixel_size_y: float = 0.402
 ):
     """
-
-    Parameters
-    ----------
-    ROI_arr
-    pixel_size_x
-    pixel_size_y
-
-    Returns
-    -------
-
+    Return array with 2D Noise Power Spectrum
     """
     NPS_array = np.empty_like(ROI_arr)
     for i, roi in enumerate(ROI_arr):
@@ -142,7 +133,7 @@ def get_NPS_1D(
     NPS_2D: np.ndarray, size_of_pixel_in_spatial_domain: float = 0.402
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-
+    Return array with radial frequency and Noise Power Spectrum 1D values
     """
     cen_x = NPS_2D.shape[1] // 2
     cen_y = NPS_2D.shape[1] // 2
@@ -162,13 +153,16 @@ def get_NPS_1D(
         rad_values = NPS_2D[mask]
         intensity[index] = np.mean(rad_values)
         index += 1
-        # Plot data
-    x = rad * 1.0 / (size_of_pixel_in_spatial_domain * NPS_2D.shape[1])
-    y = intensity
-    return x, y
+
+    f_radial = rad * 1.0 / (size_of_pixel_in_spatial_domain * NPS_2D.shape[1])
+    NPS_1D = intensity
+    return f_radial, NPS_1D
 
 
 def get_noise(NPS_2D: np.ndarray):
+    """
+    Return noise calculated as 2D integral of 2D Noise Power Spectrum
+    """
     return np.sqrt(np.trapz(np.trapz(NPS_2D, axis=0), axis=0))
 
 
@@ -183,7 +177,7 @@ def make_plot(
     ax=None,
 ):
     """
-
+    Make plot of points with interpolated function with cubic splines
     """
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline = CubicSpline(x_points, y_points)
@@ -220,7 +214,7 @@ def make_two_plots(
     num: int = 64,
 ):
     """
-
+    Make plot of two sets of points with interpolated functions with cubic splines
     """
     x_interpolate = np.linspace(min_x, max_x, num)
     cubic_spline_1 = CubicSpline(x_points_1, y_points_1)
@@ -236,11 +230,11 @@ def make_two_plots(
     plt.grid(which="major", alpha=0.7)
 
 
-def make_evaluate_plot(img_noise, img_denoised):
-    # Create a 2x2 grid of subplots
+def make_evaluate_plot(img_noise: np.ndarray, img_denoised: np.ndarray):
+    """
+    Make evaluated plot of denoised image
+    """
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
-
-    # Plot the data on each subplot
     ROI_array_rectangle_noise = get_rect_ROI(
         image=np.flipud(img_noise), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 0]
     )
@@ -263,7 +257,7 @@ def make_evaluate_plot(img_noise, img_denoised):
     make_plot(
         rad_noise,
         intensity_noise,
-        title="CT Scan - rectangle ROI of orignal image",
+        title="CT Scan - rectangle ROI of original image",
         legend=" NPS 1D",
         min_x=0,
         max_x=1.0,
@@ -271,13 +265,12 @@ def make_evaluate_plot(img_noise, img_denoised):
         ax=axes[1, 0],
     )
     axes[1, 0].set_title("NPS 1D noised image")
-
     NPS_2D_rectangle_denoised = get_NPS_2D(ROI_array_rectangle_denoised)
     rad_denoise, intensity_denoised = get_NPS_1D(NPS_2D_rectangle_denoised)
     make_plot(
         rad_denoise,
         intensity_denoised,
-        title="CT Scan - rectangle ROI of orignal image",
+        title="CT Scan - rectangle ROI of original image",
         legend=" NPS 1D",
         min_x=0,
         max_x=1.0,
@@ -285,19 +278,22 @@ def make_evaluate_plot(img_noise, img_denoised):
         ax=axes[1, 1],
     )
     axes[1, 1].set_title("NPS 1 denoised image")
-
     plt.tight_layout()
-
-    # Show the plots
     plt.show()
     return rad_noise, intensity_noise, rad_denoise, intensity_denoised
 
 
 def np_to_torch(np_array):
+    """
+    Convert numpy array to torch tensor
+    """
     return torch.from_numpy(np_array).float()
 
 
 def torch_to_np(torch_array):
+    """
+     Convert torch tensor to numpy array
+     """
     return np.squeeze(torch_array.detach().cpu().numpy())
 
 
@@ -325,39 +321,18 @@ def add_noise(image, noise_level=0.05):
 
 
 def get_max(data_path: Path):
+    """
+    Get maximum value from all images in given folders
+    """
     images = get_data(data_path)
     return np.max(images)
 
 
 def nrmse(recon_img, reference_img):
     """
-
+    Normalized Root Mean Square Error
     """
     n = (reference_img - recon_img) ** 2
     den = reference_img ** 2
     return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
 
-
-if __name__ == "__main__":
-    image = get_data(path)[200]
-    plt.imshow(image[20:120, 250:350])
-    plt.show()
-    ROI_array_rectangle = get_rect_ROI(
-        image=image, y=188, x=60, size=16, num=9, plot=True
-    )
-    plt.show()
-    NPS_2D_rectangle = get_NPS_2D(ROI_array_rectangle)
-    print(get_noise(NPS_2D_rectangle))
-    plt.imshow(NPS_2D_rectangle)
-    plt.show()
-    radius, intensity = get_NPS_1D(NPS_2D_rectangle)
-    make_plot(
-        radius,
-        intensity,
-        title="CT Scan - rectangle ROI",
-        legend=" NPS 1D",
-        min_x=0,
-        max_x=1.0,
-        num=64,
-    )
-    plt.show()
