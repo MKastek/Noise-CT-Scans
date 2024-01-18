@@ -14,7 +14,7 @@ The differences between images are due to the noise texture, that is, the spatia
 ## Noise Power Spectrum - NPS 
 The noise-power spectrum (NPS) is a useful measure that provides a more complete description of noise than the simple standard deviation. It describes the noise variance as a function of spatial frequency and therefore characterizes noise texture.  
 ## NPS 2D   
-![](https://github.com/MKastek/Noise-CT-Scans/blob/7c03f51d6ad282a6db71883360067f4a345c1877/images/NPS-2D.PNG)  
+![](https://github.com/MKastek/Noise-CT-Scans/blob/9bb4ce518d1db5e4656f3e1a2478faca685bf3ee/images/roi.PNG)  
 NPS can be calculated with the formula:
 $$NPS(f_{x},f_{y})=\frac{1}{N}\frac{\Delta_{x}\Delta_{y}}{N_{x}N_{y}}\sum_{i=1}^{N}|DFT_{2D}[I_{i}(x,y)-\bar{I_{i}}]|^{2}$$
 where:  
@@ -22,11 +22,12 @@ $N$ - the number of ROIs
 $I_{i}(x,y)$ - the signal in the $i^{th}$ ROI  
 $\bar{I}$ - mean of $I_{i}(x,y)$  
 $\Delta_{x}, \Delta_{y}$ - pixel size  
-Result of NPS in spatial frequency $f_{x}, f_{y}$
+Result of NPS in spatial frequency $f_{x}, f_{y}$  
+![](https://github.com/MKastek/Noise-CT-Scans/blob/7c03f51d6ad282a6db71883360067f4a345c1877/images/NPS-2D.PNG)  
 ## NPS 1D  
 The $f_{x}$ and $f_{y}$ frequencies in the 2D NPS can be collapsed to a 1D radial frequency, $f_{r}$ by radially averaging using:  
 $$f_{r} = \sqrt{f_{x}^{2}+f_{y}^2}$$  
-
+![](https://github.com/MKastek/Noise-CT-Scans/blob/9bb4ce518d1db5e4656f3e1a2478faca685bf3ee/images/NPS-1D.PNG)
 The initial positive slope of this curve results from the ramp filtering that is used in filtered-back-projection reconstruction, and the negative slope at higher spatial frequencies occurs due to the roll-off properties of the reconstruction kernel used to dampen high-frequency noise in the images.
 ## Denoising 
 ## Denosing with Deep Image Prior
