@@ -16,19 +16,7 @@ def get_denoised_image_DIP(
     output_filename:str="DIP_model",
 ):
     """
-
-    Parameters
-    ----------
-    reference_image
-    input_random_image
-    model
-    epochs
-    plot
-    output_filename
-
-    Returns
-    -------
-
+    Deep Image Prior
     """
     device = torch.device("cpu")
     image_torch = np_to_torch(reference_image).to(device)
@@ -37,7 +25,6 @@ def get_denoised_image_DIP(
     optimiser = torch.optim.Adam(model_dip.parameters(), lr=1e-4)
     train_loss, train_noise = list(), list()
     fig, axs = plt.subplots(2, 2, figsize=(20, 20))
-    ax2 = axs[1, 0].twinx()
     for ep in range(epochs):
         optimiser.zero_grad()
         output_image = model_dip(input_image)
@@ -54,7 +41,6 @@ def get_denoised_image_DIP(
             axs[1, 0].cla()
             axs[1, 0].set_title(f"Loss epoch:{ep}")
             axs[1, 0].plot(train_loss)
-            ax2.plot(train_noise, color="r", label="cos(x)")
             axs[1, 0].grid()
             axs[1, 1].set_title("Orginal image")
             axs[1, 1].imshow(image_torch)

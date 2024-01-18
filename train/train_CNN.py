@@ -10,7 +10,7 @@ from model import DnCNN
 from utils import get_max
 
 
-def train(
+def train_CNN(
     model,
     train_loader,
     criterion,
@@ -63,10 +63,10 @@ if __name__ == "__main__":
     )
     normalize = get_max(path)
     dataset = TrainDataset(data_path=path, normalize=normalize)
-    train_loader = DataLoader(dataset, batch_size=8, shuffle=True)
+    train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = DnCNN()
     criterion = nn.MSELoss()
     lr = 1e-4
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    train(model, train_loader, criterion, optimizer, num_epochs=10)
+    train_CNN(model, train_loader, criterion, optimizer, num_epochs=1000)

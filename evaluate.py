@@ -20,6 +20,7 @@ def evaluate(model, img_noise, title="NPS 1D comparison after 10000 epochs"):
 
     """
     img_noise_torch = np_to_torch(img_noise).reshape(1, 1, 100, 100)
+    #img_noise_torch = np_to_torch(img_noise).reshape(1, 1, 100, 100)
     img_denoised = torch_to_np(model(img_noise_torch))
     rad_noise, intensity_noise, rad_denoise, intensity_denoised = make_evaluate_plot(
         img_noise, img_denoised
@@ -40,7 +41,7 @@ def evaluate(model, img_noise, title="NPS 1D comparison after 10000 epochs"):
 
 
 if __name__ == "__main__":
-    model = torch.load(Path().cwd() / "model" / "CNN_model.pt")
+    model = torch.load(Path().cwd() / "model" / "saved" /  "CNN_model.pt")
     path = (
         Path().resolve().parents[1]
         / "dane"
@@ -55,5 +56,5 @@ if __name__ == "__main__":
     roi_row = slice(30, 130)
     roi_column = slice(250, 350)
     img_noise = images[55][roi_row, roi_column] / 1350
-    img_denoised = model(np_to_torch(img_noise).reshape(1, 1, 100, 100))
+    # img_denoised = model(np_to_torch(img_noise).reshape(1, 1, 100, 100))
     evaluate(model, img_noise)
