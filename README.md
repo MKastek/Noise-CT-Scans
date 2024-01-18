@@ -14,6 +14,7 @@ The differences between images are due to the noise texture, that is, the spatia
 ## Noise Power Spectrum - NPS 
 The noise-power spectrum (NPS) is a useful measure that provides a more complete description of noise than the simple standard deviation. It describes the noise variance as a function of spatial frequency and therefore characterizes noise texture.  
 ## NPS 2D   
+![](https://github.com/MKastek/Noise-CT-Scans/blob/7c03f51d6ad282a6db71883360067f4a345c1877/images/NPS-2D.PNG)  
 NPS can be calculated with the formula:
 $$NPS(f_{x},f_{y})=\frac{1}{N}\frac{\Delta_{x}\Delta_{y}}{N_{x}N_{y}}\sum_{i=1}^{N}|DFT_{2D}[I_{i}(x,y)-\bar{I_{i}}]|^{2}$$
 where:  
