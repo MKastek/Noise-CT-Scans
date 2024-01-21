@@ -11,9 +11,9 @@ def get_denoised_image_DIP(
     reference_image: np.array,
     input_random_image: np.array,
     model,
-    epochs:int,
+    epochs: int,
     plot: bool,
-    output_filename:str="DIP_model",
+    output_filename: str = "DIP_model",
 ):
     """
     Deep Image Prior
@@ -33,6 +33,7 @@ def get_denoised_image_DIP(
         train_noise.append(get_noise(torch_to_np(output_image)))
         loss.backward()
         optimiser.step()
+        print(f"Epoch: {ep}")
         if ep % 4 == 0 and plot == True:
             axs[0, 0].set_title("Input image")
             axs[0, 0].imshow(input_image)
@@ -68,10 +69,10 @@ if __name__ == "__main__":
     )
     images = get_data(path)
     roi_images = np.array([image[30:130, 250:350] for image in images])
-    roi_image = roi_images[220] / np.max(roi_images[220])
+    roi_image = roi_images[220]
     input_random_image = torch.rand(100, 100)
     model = CNN_DIP(16, 100, 3)
     epochs = 5000
     output_image = get_denoised_image_DIP(
-        roi_image, input_random_image, model, epochs, True
+        roi_image, input_random_image, model, epochs, False
     )

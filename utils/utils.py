@@ -230,20 +230,22 @@ def make_two_plots(
     plt.grid(which="major", alpha=0.7)
 
 
-def make_evaluate_plot(img_noise: np.ndarray, img_denoised: np.ndarray):
+def make_evaluate_plot(
+    img_noise: np.ndarray, img_denoised: np.ndarray, y: int = 55, x: int = 55
+):
     """
     Make evaluated plot of denoised image
     """
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
     ROI_array_rectangle_noise = get_rect_ROI(
-        image=np.flipud(img_noise), y=55, x=55, size=8, num=9, plot=True, ax=axes[0, 0]
+        image=np.flipud(img_noise), y=y, x=x, size=8, num=9, plot=True, ax=axes[0, 0]
     )
     axes[0, 0].set_title("Noise image")
 
     ROI_array_rectangle_denoised = get_rect_ROI(
         image=np.flipud(img_denoised),
-        y=55,
-        x=55,
+        y=y,
+        x=x,
         size=8,
         num=9,
         plot=True,
@@ -307,7 +309,7 @@ def save_array(
 
 
 def load_array(file_name):
-    return np.load(Path("output") / file_name)
+    return np.load(Path("output/data") / file_name)
 
 
 def add_noise(image, noise_level=0.05):
@@ -335,4 +337,3 @@ def nrmse(recon_img, reference_img):
     n = (reference_img - recon_img) ** 2
     den = reference_img ** 2
     return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
-
