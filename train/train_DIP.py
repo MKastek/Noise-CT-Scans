@@ -14,9 +14,9 @@ def get_denoised_image_DIP(
     epochs: int,
     plot: bool,
     output_filename: str = "DIP_model",
-):
+) -> np.ndarray:
     """
-    Deep Image Prior
+    Train DIP, return denoised image
     """
     device = torch.device("cpu")
     image_torch = np_to_torch(reference_image).to(device)

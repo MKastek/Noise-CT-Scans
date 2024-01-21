@@ -330,7 +330,7 @@ def get_max(data_path: Path):
     return np.max(images)
 
 
-def nrmse(recon_img, reference_img):
+def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
     """
     Normalized Root Mean Square Error
     """

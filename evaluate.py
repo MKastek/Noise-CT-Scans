@@ -15,19 +15,6 @@ from utils import (
 
 
 def evaluate_CNN(model, img_noise, title="NPS 1D comparison after 100 epochs"):
-    """
-
-    Parameters
-    ----------
-    model
-    img_noise
-    title
-
-    Returns
-    -------
-
-    """
-    # img_noise_torch = np_to_torch(img_noise).reshape( 100, 100)
     img_noise_torch = np_to_torch(img_noise).reshape(1, 1, 100, 100)
     img_denoised = torch_to_np(model(img_noise_torch))
     rad_noise, intensity_noise, rad_denoise, intensity_denoised = make_evaluate_plot(

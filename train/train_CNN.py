@@ -19,19 +19,7 @@ def train_CNN(
     output_filename: str = "CNN_model",
 ):
     """
-
-    Parameters
-    ----------
-    model
-    train_loader
-    criterion
-    optimizer
-    num_epochs
-    output_filename
-
-    Returns
-    -------
-
+    Train denoising CNN
     """
     for epoch in range(num_epochs):
         for i, (inputs, targets) in enumerate(train_loader):
@@ -59,7 +47,6 @@ if __name__ == "__main__":
         / "S1"
     )
     normalize = get_max(path)
-    print(get_data(path).shape)
     dataset = TrainDataset(data_path=path, normalize=normalize)
     train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 

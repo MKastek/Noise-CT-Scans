@@ -29,8 +29,11 @@ The $f_{x}$ and $f_{y}$ frequencies in the 2D NPS can be collapsed to a 1D radia
 $$f_{r} = \sqrt{f_{x}^{2}+f_{y}^2}$$  
 ![](https://github.com/MKastek/Noise-CT-Scans/blob/9bb4ce518d1db5e4656f3e1a2478faca685bf3ee/images/NPS-1D.PNG)  
 The initial positive slope of this curve results from the ramp filtering that is used in filtered-back-projection reconstruction, and the negative slope at higher spatial frequencies occurs due to the roll-off properties of the reconstruction kernel used to dampen high-frequency noise in the images.
-## Denoising 
+## Denoising with CNN
+![](images/denoised_CNN.png)
 ## Denosing with Deep Image Prior
-## Configuration
+![](images/denoised_DIP.png)
 ## Run training
-## Run evaluation
+[train_DIP.py](https://github.com/MKastek/Noise-CT-Scans/blob/master/train/train_DIP.py)  
+[train_CNN.py](https://github.com/MKastek/Noise-CT-Scans/blob/master/train/train_CNN.py)
+
