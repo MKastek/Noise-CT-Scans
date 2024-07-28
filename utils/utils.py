@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 import numpy as np
 import torch
@@ -61,6 +62,8 @@ def get_rect_ROI(
             plt.pcolormesh(image)
             plt.colorbar()
             plt.title("Selected ROIs")
+            plt.xticks([])
+            plt.yticks([])
         else:
             ax.pcolormesh(image)
     for i in range(num):
@@ -312,11 +315,11 @@ def load_array(file_name):
     return np.load(Path("output/data") / file_name)
 
 
-def add_noise(image, noise_level=0.05):
+def add_noise(image, noise_level=5):
     """
     Add random Gaussian noise to the input image.
     """
-    noise = Variable(image.data.new(image.size()).normal_(0, noise_level) * 0.5)
+    noise = Variable(image.data.new(image.size()).normal_(0, noise_level))
     noisy_image = image + noise
 
     return noisy_image, noise
@@ -337,3 +340,21 @@ def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
     n = (reference_img - recon_img) ** 2
     den = reference_img ** 2
     return 100.0 * torch.mean(n) ** 0.5 / torch.mean(den) ** 0.5
+
+
+def calculate_psnr(img1, img2, border=0):
+    # img1 and img2 have range [0, 255]
+    #img1 = img1.squeeze()
+    #img2 = img2.squeeze()
+    if not img1.shape == img2.shape:
+        raise ValueError('Input images must have the same dimensions.')
+    h, w = img1.shape[:2]
+    img1 = img1[border:h-border, border:w-border]
+    img2 = img2[border:h-border, border:w-border]
+
+    img1 = img1.astype(np.float64)
+    img2 = img2.astype(np.float64)
+    mse = np.mean((img1 - img2)**2)
+    if mse == 0:
+        return float('inf')
+    return 10 * math.log10(np.max(img1)**2/ mse)

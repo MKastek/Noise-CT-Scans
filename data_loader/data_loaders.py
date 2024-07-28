@@ -12,13 +12,12 @@ class TrainDataset(Dataset):
         self,
         data_path: Path,
         roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
-        normalize=1350,
+        roi_column=slice(250, 350)
     ):
         self.roi_row = roi_row
         self.roi_column = roi_column
         self.data = np.array(
-            [(image[roi_row, roi_column]) / normalize for image in get_data(data_path)]
+            [(image[roi_row, roi_column]) for image in get_data(data_path)]
         )
 
     def __len__(self):

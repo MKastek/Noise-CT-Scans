@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from data_loader.data_loaders import TrainDataset
-from model import DnCNN
+from model import DnCNN, PDnCNN
 from utils import get_max, get_data
 
 
@@ -16,7 +16,7 @@ def train_CNN(
     criterion,
     optimizer,
     num_epochs: int = 10,
-    output_filename: str = "CNN_model",
+    output_filename: str = "DnCNN_model",
 ):
     """
     Train denoising CNN
@@ -47,11 +47,21 @@ if __name__ == "__main__":
         / "S1"
     )
     normalize = get_max(path)
-    dataset = TrainDataset(data_path=path, normalize=normalize)
+    dataset = TrainDataset(data_path=path)
     train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model = DnCNN()
+    model = PDnCNN()
+    model.load_state_dict(torch.load("../model/pretrained/DnCNN/dncnn_25.pth"), strict=True)
+    #model.eval()
+    # for k, v in model.named_parameters():
+    #     v.requires_grad = False
+    model = model.to('cpu')
+    print('Model path: {:s}'.format("dncnn_25.pth"))
+    number_parameters = sum(map(lambda x: x.numel(), model.parameters()))
+    print('Params number: {}'.format(number_parameters))
     criterion = nn.MSELoss()
     lr = 1e-4
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    train_CNN(model, train_loader, criterion, optimizer, num_epochs=100)
+    train_CNN(model, train_loader, criterion, optimizer, num_epochs=10)
+
+

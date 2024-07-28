@@ -5,7 +5,7 @@ import torch
 from model import CNN_DIP
 from utils import np_to_torch, torch_to_np, save_array, get_data, get_noise, nrmse
 import matplotlib.pyplot as plt
-
+plt.rcParams['image.cmap'] = 'gray'
 
 def get_denoised_image_DIP(
     reference_image: np.array,
@@ -39,6 +39,17 @@ def get_denoised_image_DIP(
             axs[0, 0].imshow(input_image)
             axs[0, 1].set_title("Denoised image")
             axs[0, 1].imshow(torch_to_np(output_image))
+            axs[0, 0].set_xticks([])
+            axs[0, 0].set_yticks([])
+            axs[0, 1].set_xticks([])
+            axs[0, 1].set_yticks([])
+
+            axs[1, 0].set_xticks([])
+            axs[1, 0].set_yticks([])
+            axs[1, 1].set_xticks([])
+            axs[1, 1].set_yticks([])
+
+
             axs[1, 0].cla()
             axs[1, 0].set_title(f"Loss epoch:{ep}")
             axs[1, 0].plot(train_loss)
@@ -74,5 +85,5 @@ if __name__ == "__main__":
     model = CNN_DIP(16, 100, 3)
     epochs = 5000
     output_image = get_denoised_image_DIP(
-        roi_image, input_random_image, model, epochs, False
+        roi_image, input_random_image, model, epochs, True
     )

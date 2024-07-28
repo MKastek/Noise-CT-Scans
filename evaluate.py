@@ -58,6 +58,8 @@ def evaluate_DIP(
     plt.show()
 
 
+
+
 if __name__ == "__main__":
     model = torch.load(Path().cwd() / "model" / "saved" / "CNN_model.pt")
     path = (
@@ -76,3 +78,8 @@ if __name__ == "__main__":
     img_noise = images[55][roi_row, roi_column] / 1350
     evaluate_CNN(model, img_noise)
     evaluate_DIP("orginal_image_5000.npy", "denoised_image_5000.npy")
+
+
+
+
+
