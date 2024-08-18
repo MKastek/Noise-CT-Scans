@@ -11,19 +11,13 @@ from utils import get_data
 class CNN_DIP(BaseModel):
     def __init__(self, n_layers=16, n_channels=100, k_size=3):
         super(CNN_DIP, self).__init__()
-        pd = int(k_size / 2)
-        layers = [nn.Conv2d(1, n_channels, (k_size, k_size), padding=pd), nn.PReLU()]
-        for _ in range(n_layers):
-            layers.append(
-                nn.Conv2d(n_channels, n_channels, (k_size, k_size), padding=pd)
-            )
-            layers.append(nn.PReLU())
-        layers.append(nn.Conv2d(n_channels, 1, (k_size, k_size), padding=pd))
-        layers.append(nn.PReLU())
-        self.deep_net = nn.Sequential(*layers)
+        head = conv(in_channels=1, out_channels=n_channels, kernel_size=k_size, padding=1, mode='CPR')
+        body = [conv( n_channels,  n_channels, mode='CPR') for _ in range(n_layers)]
+        tail =  conv(in_channels=n_channels, out_channels=1, kernel_size=k_size, padding=1, mode='CPR')
+        self.model = sequential(head, *body, tail)
 
     def forward(self, x):
-        return torch.squeeze(self.deep_net(x.unsqueeze(0).unsqueeze(0)))
+        return self.model(x.unsqueeze(0).unsqueeze(0))
 
 
 def sequential(*args):
@@ -59,6 +53,10 @@ def conv(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bi
             return sequential(*[nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
                                          kernel_size=(kernel_size, kernel_size), stride=(stride, stride),
                                          padding=padding, bias=bias), nn.ReLU(inplace=True)])
+        case 'CPR':
+            return sequential(*[nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
+                                          kernel_size=(kernel_size, kernel_size), stride=(stride, stride),
+                                          padding=padding, bias=bias), nn.PReLU()])
 
 
 class PDnCNN(nn.Module):

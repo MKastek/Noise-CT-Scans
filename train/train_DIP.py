@@ -82,7 +82,7 @@ if __name__ == "__main__":
     roi_images = np.array([image[30:130, 250:350] for image in images])
     roi_image = roi_images[220]
     input_random_image = torch.rand(100, 100)
-    model = CNN_DIP(16, 100, 3)
+    model = CNN_DIP(16, 10, 3)
     epochs = 5000
     output_image = get_denoised_image_DIP(
         roi_image, input_random_image, model, epochs, True
