@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from data_loader.data_loaders import TrainDataset
-from model import DnCNN, PDnCNN
+from model import DnCNN
 from utils import get_max, get_data
 
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     dataset = TrainDataset(data_path=path)
     train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    model = PDnCNN()
+    model = DnCNN()
     model.load_state_dict(torch.load("../model/pretrained/DnCNN/dncnn_25.pth"), strict=True)
     #model.eval()
     # for k, v in model.named_parameters():
