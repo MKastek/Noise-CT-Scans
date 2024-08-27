@@ -23,30 +23,18 @@ path = (
 
 def get_data(
     data_path: Path,
-    skip_index: np.ndarray = np.concatenate(
-        (
-            np.arange(61, 67),
-            np.arange(68, 78),
-            np.arange(79, 89),
-            np.arange(90, 100),
-            np.arange(101, 111),
-            np.arange(113, 123),
-            np.arange(124, 132),
-        ),
-        axis=0,
-    ),
 ) -> np.ndarray:
     """
     Return array with CT image data
     """
     return np.stack(
         [
-            np.flip(dcmread(file).pixel_array)
-            for idx, file in enumerate(data_path.iterdir())
-            if idx not in skip_index
+            np.load(file)
+            for file in data_path.glob("*.npy")
         ],
         axis=0,
     )
+
 
 
 def get_rect_ROI(

@@ -8,7 +8,6 @@ from scipy.interpolate import CubicSpline
 
 from model import DnCNN
 
-# plt.rcParams['image.cmap'] = 'gray'
 from utils import (
     get_data,
     torch_to_np,
@@ -120,16 +119,7 @@ if __name__ == "__main__":
         Path().resolve().parents[1] / "model" / "pretrained" / "DnCNN"
     )
     trained_model_path = Path().resolve().parents[1] / "model" / "saved"
-    data_path = (
-        Path().resolve().parents[3]
-        / "dane"
-        / "KARDIO ZAMKNIETE"
-        / "A001"
-        / "DICOM"
-        / "P1"
-        / "E1"
-        / "S3"
-    )
+    data_path = Path().resolve().parents[1] / "data" / "test_dataset"
 
     evaluate_pretrained_model(
         model=DnCNN(),

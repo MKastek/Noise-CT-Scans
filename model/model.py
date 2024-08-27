@@ -2,9 +2,9 @@ from model.base_model import BaseModel
 from model.utils import conv, sequential
 
 
-class CNN(BaseModel):
+class DIP(BaseModel):
     def __init__(self, in_nc=1, out_nc=1, nc=100):
-        super(CNN, self).__init__()
+        super(DIP, self).__init__()
         head = conv(in_nc,nc, mode='CPR')
         body = [conv( nc, nc, mode='CPR') for _ in range(16)]
         tail = conv(nc, out_nc, mode='CPR')

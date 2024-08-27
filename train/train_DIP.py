@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from model import CNN_DIP
+from model import DIP
 from utils import np_to_torch, torch_to_np, save_array, get_data, get_noise, nrmse
 import matplotlib.pyplot as plt
 plt.rcParams['image.cmap'] = 'gray'
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     roi_images = np.array([image[30:130, 250:350] for image in images])
     roi_image = roi_images[220]
     input_random_image = torch.rand(100, 100)
-    model = CNN_DIP(1, 1, 10)
+    model = DIP(1, 1, 10)
     epochs = 5000
     output_image = get_denoised_image_DIP(
         roi_image, input_random_image, model, epochs, True
