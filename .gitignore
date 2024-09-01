@@ -5,6 +5,8 @@
 .vscode/
 .idea/
 
+/data/
+/raw_data/
 # Vagrant
 .vagrant/
 

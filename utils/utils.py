@@ -1,6 +1,7 @@
 import math
 from pathlib import Path
 import numpy as np
+import scipy
 import torch
 from numpy import ndarray
 from pydicom import dcmread
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from scipy.interpolate import CubicSpline
 from torch.autograd import Variable
+import itertools
 
 path = (
     Path().resolve().parents[2]
@@ -23,17 +25,34 @@ path = (
 
 def get_data(
     data_path: Path,
-) -> np.ndarray:
+) :
     """
     Return array with CT image data
     """
-    return np.stack(
+    data =  np.stack(
         [
             np.load(file)
-            for file in data_path.glob("*.npy")
+            for file in itertools.islice(data_path.glob("*.npy"), 5)
         ],
         axis=0,
     )
+    min = get_min(data)
+    max = get_max(data)
+    a_max=1
+    median_filtered_image = scipy.ndimage.median_filter(data, size=3)
+
+    # Estimate the noise by subtracting the median filtered image from the original
+    noise = data - median_filtered_image
+
+    # To get a single noise value, you could use the standard deviation of the noise
+    noise_std_dev = np.average(np.std((noise - min) * a_max / (max - min)))
+
+
+
+    print("Estimated Noise Standard Deviation:", noise_std_dev)
+    print(noise_std_dev)
+
+    return min, max, np.clip((data-min)*1/(max-min),0,1)
 
 
 
@@ -303,22 +322,28 @@ def load_array(file_name):
     return np.load(Path("output/data") / file_name)
 
 
-def add_noise(image, noise_level=5):
+def add_noise(image, min, max,noise_level=25):
     """
     Add random Gaussian noise to the input image.
     """
-    noise = Variable(image.data.new(image.size()).normal_(0, noise_level))
+    noise = Variable(image.data.new(image.size()).normal_(0, 0.025))
     noisy_image = image + noise
 
     return noisy_image, noise
 
 
-def get_max(data_path: Path):
+def get_max(images: np.ndarray):
     """
     Get maximum value from all images in given folders
     """
-    images = get_data(data_path)
+
     return np.max(images)
+
+def get_min(images: np.ndarray):
+    """
+    Get maximum value from all images in given folders
+    """
+    return np.min(images)
 
 
 def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
@@ -331,9 +356,6 @@ def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
 
 
 def calculate_psnr(img1, img2, border=0):
-    # img1 and img2 have range [0, 255]
-    #img1 = img1.squeeze()
-    #img2 = img2.squeeze()
     if not img1.shape == img2.shape:
         raise ValueError('Input images must have the same dimensions.')
     h, w = img1.shape[:2]

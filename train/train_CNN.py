@@ -15,6 +15,7 @@ def train_DnCNN(
     train_loader,
     criterion,
     optimizer,
+        num_scans: int,
     num_epochs: int = 10,
     output_filename: str = "DnCNN_model",
 ):
@@ -22,20 +23,23 @@ def train_DnCNN(
     Train denoising CNN
     """
     for epoch in range(num_epochs):
+        epoch_loss = 0
         for i, (inputs, targets) in enumerate(train_loader):
+            optimizer.zero_grad()
             inputs, targets = Variable(inputs), Variable(targets)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            print(f"Epoch [{epoch + 1}/{num_epochs}], step:{i}, loss:{loss}")
+            epoch_loss += loss.item()
+        print(f"Epoch [{epoch + 1}],  loss:{epoch_loss / num_scans}")
+    print(f"{output_filename}_{str(num_epochs)}_epoch_{str(num_scans)}_scans.pt")
     torch.save(
-        model, Path().resolve().parents[0] / "model" / "saved" / f"{output_filename}.pt"
+        model, Path().resolve().parents[0] / "model" / "saved" / f"{output_filename}_{str(num_epochs)}_epoch_{str(num_scans)}_scans.pt"
     )
 
 if __name__ == "__main__":
-    dataset = TrainDataset(data_path=Path().resolve().parents[0] / "data" / "test_dataset")
+    dataset = TrainDataset(data_path=Path().resolve().parents[0] / "data" / "train_dataset")
     train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = DnCNN()
@@ -48,8 +52,8 @@ if __name__ == "__main__":
     number_parameters = sum(map(lambda x: x.numel(), model.parameters()))
     print('Params number: {}'.format(number_parameters))
     criterion = nn.MSELoss()
-    lr = 1e-4
+    lr = 0.0001
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    train_DnCNN(model, train_loader, criterion, optimizer, num_epochs=10)
+    train_DnCNN(model, train_loader, criterion, optimizer,len(dataset), num_epochs=100)
 
 

@@ -37,3 +37,4 @@ The initial positive slope of this curve results from the ramp filtering that is
 [train_DIP.py](https://github.com/MKastek/Noise-CT-Scans/blob/master/train/train_DIP.py)  
 [train_CNN.py](https://github.com/MKastek/Noise-CT-Scans/blob/master/train/train_CNN.py)
 
+

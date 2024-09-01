@@ -30,7 +30,7 @@ def evaluate_pretrained_model(
     model.eval()
     for k, v in model.named_parameters():
         v.requires_grad = False
-    images = get_data(data_path)
+    _, _, images = get_data(data_path)
     image_test = images[data_index][roi_row, roi_column]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
     sigma = int(re.findall(r"\d+", model_path.name)[0])
@@ -65,7 +65,7 @@ def evaluate_pretrained_models_nps(
     roi_row: slice,
     roi_column: slice,
 ):
-    images = get_data(data_path)
+    _, _, images = get_data(data_path)
     image_test = images[data_index][roi_row, roi_column]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
     for model_path, color in zip(models_path, colors):
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         model=DnCNN(),
         model_path=pretrained_model_path / "dncnn_15.pth",
         data_path=data_path,
-        data_index=200,
+        data_index=2,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350),
     )
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         model=DnCNN(),
         model_path=pretrained_model_path / "dncnn_25.pth",
         data_path=data_path,
-        data_index=200,
+        data_index=2,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350),
     )
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         model=DnCNN(),
         model_path=pretrained_model_path / "dncnn_50.pth",
         data_path=data_path,
-        data_index=200,
+        data_index=2,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350),
     )
@@ -154,7 +154,7 @@ if __name__ == "__main__":
         ],
         colors=["red", "green", "blue", "gray"],
         data_path=data_path,
-        data_index=200,
+        data_index=2,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350),
     )

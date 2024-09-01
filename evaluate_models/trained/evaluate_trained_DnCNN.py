@@ -6,6 +6,7 @@ import torch
 from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
 
+from evaluate_models.pretrained.evaluate_pretrained_DnCNN import evaluate_pretrained_model
 from model import DnCNN
 
 from utils import (
@@ -20,13 +21,13 @@ from utils import (
 
 def evaluate_trained_model(
     model,
-    model_path: Path,
     data_path: Path,
     data_index: int,
     roi_row: slice,
     roi_column: slice,
 ):
-    images = get_data(data_path)
+    _,_,images = get_data(data_path)
+
     image_test = images[data_index][roi_row, roi_column]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
     plt.suptitle(fr"Test of trained model DnCNN")
@@ -54,20 +55,32 @@ def evaluate_trained_model(
 
 if __name__ == "__main__":
     model = DnCNN()
+    trained_model_path = Path().resolve().parents[1] / "model" / "saved"
+    data_path = Path().resolve().parents[1] / "data" / "train_dataset"
+
+
     pretrained_model_path = (
         Path().resolve().parents[1] / "model" / "pretrained" / "DnCNN"
     )
-    trained_model_path = Path().resolve().parents[1] / "model" / "saved"
-    data_path = Path().resolve().parents[1] / "data" / "test_dataset"
+
+
+    evaluate_pretrained_model(
+        model=DnCNN(),
+        model_path=pretrained_model_path / "dncnn_25.pth",
+        data_path=data_path,
+        data_index=2,
+        roi_row=slice(30, 130),
+        roi_column=slice(250, 350),
+    )
+
     model_trained = torch.load(
-        Path().resolve().parents[1] / "model" / "saved" / "DnCNN_model.pt"
+        Path().resolve().parents[1] / "model" / "saved" / "DnCNN_model_100_epoch_5_scans.pt"
     )
 
     evaluate_trained_model(
         model=model_trained,
-        model_path=trained_model_path / "DnCNN_model.pt",
         data_path=data_path,
-        data_index=200,
+        data_index=2,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350),
     )

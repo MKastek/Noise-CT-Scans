@@ -16,8 +16,9 @@ class TrainDataset(Dataset):
     ):
         self.roi_row = roi_row
         self.roi_column = roi_column
+        self.min, self.max, self.data = get_data(data_path)
         self.data = np.array(
-            [(image[roi_row, roi_column]) for image in get_data(data_path)]
+            [(image[roi_row, roi_column]) for image in self.data]
         )
 
     def __len__(self):
@@ -32,5 +33,5 @@ class TrainDataset(Dataset):
             ),
             dtype=torch.float32,
         )
-        noise_image, noise = add_noise(image)
+        noise_image, noise = add_noise(image, self.min,self.max)
         return noise_image, image
