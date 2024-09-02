@@ -5,7 +5,9 @@ import torch
 from model import DIP
 from utils import np_to_torch, torch_to_np, save_array, get_data, get_noise, nrmse
 import matplotlib.pyplot as plt
-plt.rcParams['image.cmap'] = 'gray'
+
+plt.rcParams["image.cmap"] = "gray"
+
 
 def get_denoised_image_DIP(
     reference_image: np.array,
@@ -48,7 +50,6 @@ def get_denoised_image_DIP(
             axs[1, 0].set_yticks([])
             axs[1, 1].set_xticks([])
             axs[1, 1].set_yticks([])
-
 
             axs[1, 0].cla()
             axs[1, 0].set_title(f"Loss epoch:{ep}")

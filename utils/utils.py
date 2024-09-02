@@ -25,6 +25,7 @@ path = (
 
 def get_data(
     data_path: Path,
+    num_scans: int = 10
 ) :
     """
     Return array with CT image data
@@ -32,26 +33,12 @@ def get_data(
     data =  np.stack(
         [
             np.load(file)
-            for file in itertools.islice(data_path.glob("*.npy"), 5)
+            for file in itertools.islice(data_path.glob("*.npy"), num_scans)
         ],
         axis=0,
     )
     min = get_min(data)
     max = get_max(data)
-    a_max=1
-    median_filtered_image = scipy.ndimage.median_filter(data, size=3)
-
-    # Estimate the noise by subtracting the median filtered image from the original
-    noise = data - median_filtered_image
-
-    # To get a single noise value, you could use the standard deviation of the noise
-    noise_std_dev = np.average(np.std((noise - min) * a_max / (max - min)))
-
-
-
-    print("Estimated Noise Standard Deviation:", noise_std_dev)
-    print(noise_std_dev)
-
     return min, max, np.clip((data-min)*1/(max-min),0,1)
 
 

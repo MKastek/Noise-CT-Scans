@@ -11,12 +11,13 @@ class TrainDataset(Dataset):
     def __init__(
         self,
         data_path: Path,
+        num_scans: int = 10000,
         roi_row=slice(30, 130),
         roi_column=slice(250, 350)
     ):
         self.roi_row = roi_row
         self.roi_column = roi_column
-        self.min, self.max, self.data = get_data(data_path)
+        self.min, self.max, self.data = get_data(data_path, num_scans)
         self.data = np.array(
             [(image[roi_row, roi_column]) for image in self.data]
         )
