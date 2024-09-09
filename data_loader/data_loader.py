@@ -13,7 +13,7 @@ class TrainDataset(Dataset):
         data_path: Path,
         num_scans: int = 10000,
         roi_row=slice(30, 130),
-        roi_column=slice(250, 350)
+        roi_column=slice(250, 350),
     ):
         self.roi_row = roi_row
         self.roi_column = roi_column

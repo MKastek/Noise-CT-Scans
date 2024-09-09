@@ -87,22 +87,22 @@ def evaluate_trained_model(
 
 
     cubic_spline_trained = CubicSpline(rad_trained, intensity_trained)
-    plt.plot(rad_trained,intensity_trained , ".", color='red')
+    plt.plot(rad_trained,intensity_trained / max(intensity_trained) , ".", color='red')
 
 
     plt.plot(
         x_interpolate,
-        cubic_spline_trained(x_interpolate),
+        cubic_spline_trained(x_interpolate) /max(intensity_trained),
         label=f"model fine-tuned DnCNN ",
         color='red',
     )
 
     cubic_spline_pretrained = CubicSpline(rad_pretrained, intensity_pretrained)
-    plt.plot(rad_pretrained, intensity_pretrained, ".", color='blue')
+    plt.plot(rad_pretrained, intensity_pretrained / max(intensity_pretrained), ".", color='blue')
 
     plt.plot(
         x_interpolate,
-        cubic_spline_pretrained(x_interpolate),
+        cubic_spline_pretrained(x_interpolate) /  max(intensity_pretrained),
         label=f"model pretrained DnCNN ",
         color='blue',
     )
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     )
 
     model_trained = torch.load(
-        Path().resolve().parents[1] / "model" / "saved" / "DnCNN_model_10_epoch_5000_scans.pt"
+        Path().resolve().parents[1] / "model" / "saved" / "DnCNN_model_10_epoch_5000_scans_64_batch_size_0.0001_lr_25_noise_level.pt"
     )
 
     evaluate_trained_model(

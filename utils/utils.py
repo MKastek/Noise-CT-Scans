@@ -39,6 +39,7 @@ def get_data(
     )
     min = get_min(data)
     max = get_max(data)
+    print(min,max)
     return min, max, np.clip((data-min)*1/(max-min),0,1)
 
 
@@ -309,10 +310,12 @@ def load_array(file_name):
     return np.load(Path("output/data") / file_name)
 
 
-def add_noise(image, min, max,noise_level=25):
+def add_noise(image, min, max):
     """
     Add random Gaussian noise to the input image.
     """
+    # noise_norm_level = np.clip((noise_level - min) * 1 / (max - min), 0, 1)
+    # noise = Variable(image.data.new(image.size()).normal_(0, noise_norm_level))
     noise = Variable(image.data.new(image.size()).normal_(0, 0.025))
     noisy_image = image + noise
 
@@ -330,7 +333,7 @@ def get_min(images: np.ndarray):
     """
     Get maximum value from all images in given folders
     """
-    return np.min(images)
+    return np.min(images[(images != -2048) & (images != -2049)])
 
 
 def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
