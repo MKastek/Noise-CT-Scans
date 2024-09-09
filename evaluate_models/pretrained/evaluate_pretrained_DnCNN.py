@@ -17,6 +17,8 @@ from utils import (
     get_NPS_1D,
 )
 
+plt.rcParams["image.cmap"] = "gray"
+
 
 def evaluate_pretrained_model(
     model,

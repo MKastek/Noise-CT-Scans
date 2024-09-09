@@ -1,15 +1,13 @@
-import shutil
 from pathlib import Path
 from pydicom import dcmread
 from collections import Counter
 
 from torch import nn
 
-from constants import raw_data_path, WRONG_FILE_NAME
+from constants import WRONG_FILE_NAME
 import pandas as pd
-import numpy as np
 
-from model import BaseModel, DnCNN, DIP
+from model import BaseModel, DIP
 
 
 def count_patient_scans(path: Path, output_path: Path):

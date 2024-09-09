@@ -5,9 +5,9 @@ from model.utils import conv, sequential
 class DIP(BaseModel):
     def __init__(self, in_nc=1, out_nc=1, nc=100):
         super(DIP, self).__init__()
-        head = conv(in_nc,nc, mode='CPR')
-        body = [conv( nc, nc, mode='CPR') for _ in range(16)]
-        tail = conv(nc, out_nc, mode='CPR')
+        head = conv(in_nc, nc, mode="CPR")
+        body = [conv(nc, nc, mode="CPR") for _ in range(16)]
+        tail = conv(nc, out_nc, mode="CPR")
         self.model = sequential(head, *body, tail)
 
     def forward(self, x):
@@ -35,13 +35,12 @@ class DnCNN(BaseModel):
         """
         super(DnCNN, self).__init__()
 
-        m_head = conv(in_nc, nc, mode='CR', bias=True)
-        m_body = [conv(nc, nc, mode='CR', bias=True) for _ in range(nb - 2)]
-        m_tail = conv(nc, out_nc, mode='C', bias=True)
+        m_head = conv(in_nc, nc, mode="CR", bias=True)
+        m_body = [conv(nc, nc, mode="CR", bias=True) for _ in range(nb - 2)]
+        m_tail = conv(nc, out_nc, mode="C", bias=True)
 
         self.model = sequential(m_head, *m_body, m_tail)
 
     def forward(self, x):
         n = self.model(x)
         return x - n
-

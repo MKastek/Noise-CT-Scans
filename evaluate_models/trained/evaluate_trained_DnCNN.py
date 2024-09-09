@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +5,6 @@ import torch
 from matplotlib import pyplot as plt
 from scipy.interpolate import CubicSpline
 
-from evaluate_models.pretrained.evaluate_pretrained_DnCNN import evaluate_pretrained_model
 from model import DnCNN
 
 from utils import (
@@ -27,7 +25,7 @@ def evaluate_trained_model(
     roi_row: slice,
     roi_column: slice,
 ):
-    _,_,images = get_data(data_path)
+    _, _, images = get_data(data_path)
 
     image_test = images[data_index][roi_row, roi_column]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
@@ -51,10 +49,11 @@ def evaluate_trained_model(
     plt.subplot(132)
     plt.title("Denoised image - pretrained DnCNN")
     plt.imshow(image_denoised_pretrained_numpy)
-    plt.xlabel(f"PSNR = {calculate_psnr(image_test, image_denoised_pretrained_numpy):.2f} dB")
+    plt.xlabel(
+        f"PSNR = {calculate_psnr(image_test, image_denoised_pretrained_numpy):.2f} dB"
+    )
     plt.xticks([])
     plt.yticks([])
-
 
     plt.subplot(133)
     plt.title("Denoised image - fine-tuned DnCNN")
@@ -72,39 +71,46 @@ def evaluate_trained_model(
         image=np.flipud(image_denoised_numpy), y=5, x=5, size=8, num=9, plot=True
     )
     plt.show()
-    NPS_2D_trained = get_NPS_2D(  ROI_trained )
+    NPS_2D_trained = get_NPS_2D(ROI_trained)
     rad_trained, intensity_trained = get_NPS_1D(NPS_2D_trained)
 
     ROI_pretrained = get_rect_ROI(
-        image=np.flipud(image_denoised_pretrained_numpy), y=5, x=5, size=8, num=9, plot=True
+        image=np.flipud(image_denoised_pretrained_numpy),
+        y=5,
+        x=5,
+        size=8,
+        num=9,
+        plot=True,
     )
     plt.show()
-    NPS_2D_pretrained  = get_NPS_2D(  ROI_pretrained )
-    rad_pretrained , intensity_pretrained  = get_NPS_1D(NPS_2D_pretrained)
+    NPS_2D_pretrained = get_NPS_2D(ROI_pretrained)
+    rad_pretrained, intensity_pretrained = get_NPS_1D(NPS_2D_pretrained)
 
     x_interpolate = np.linspace(0, 1.6, 64)
 
-
-
     cubic_spline_trained = CubicSpline(rad_trained, intensity_trained)
-    plt.plot(rad_trained,intensity_trained / max(intensity_trained) , ".", color='red')
-
+    plt.plot(rad_trained, intensity_trained / max(intensity_trained), ".", color="red")
 
     plt.plot(
         x_interpolate,
-        cubic_spline_trained(x_interpolate) /max(intensity_trained),
+        cubic_spline_trained(x_interpolate) / max(intensity_trained),
         label=f"model fine-tuned DnCNN ",
-        color='red',
+        color="red",
     )
 
     cubic_spline_pretrained = CubicSpline(rad_pretrained, intensity_pretrained)
-    plt.plot(rad_pretrained, intensity_pretrained / max(intensity_pretrained), ".", color='blue')
+    plt.plot(
+        rad_pretrained,
+        intensity_pretrained / max(intensity_pretrained),
+        ".",
+        color="blue",
+    )
 
     plt.plot(
         x_interpolate,
-        cubic_spline_pretrained(x_interpolate) /  max(intensity_pretrained),
+        cubic_spline_pretrained(x_interpolate) / max(intensity_pretrained),
         label=f"model pretrained DnCNN ",
-        color='blue',
+        color="blue",
     )
 
     plt.title("Noise Power Spectrum ")
@@ -123,16 +129,19 @@ if __name__ == "__main__":
     data_path = Path().resolve().parents[1] / "data" / "test_dataset"
 
     pretrained_model_path = (
-            Path().resolve().parents[1] / "model" / "pretrained" / "DnCNN"
+        Path().resolve().parents[1] / "model" / "pretrained" / "DnCNN"
     )
 
     model_trained = torch.load(
-        Path().resolve().parents[1] / "model" / "saved" / "DnCNN_model_10_epoch_5000_scans_64_batch_size_0.0001_lr_25_noise_level.pt"
+        Path().resolve().parents[1]
+        / "model"
+        / "saved"
+        / "DnCNN_model_10_epoch_5000_scans_64_batch_size_0.0001_lr_25_noise_level.pt"
     )
 
     evaluate_trained_model(
         model=model_trained,
-        pretrained_model_path = pretrained_model_path / "dncnn_25.pth",
+        pretrained_model_path=pretrained_model_path / "dncnn_25.pth",
         data_path=data_path,
         data_index=4,
         roi_row=slice(30, 130),

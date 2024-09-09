@@ -58,7 +58,11 @@ def train_DnCNN(
             optimizer.step()
             epoch_loss += loss.item()
         loss_arr.append(epoch_loss / len(train_loader))
-        np.save( Path(output_path) / f"loss_DnCNN_model_{str(num_epochs)}_epoch_{str(num_scans)}_scans_{str(batch_size)}_batch_size_{str(lr)}_lr_{str(noise_level)}_noise_level",np.array(loss_arr) )
+        np.save(
+            Path(output_path)
+            / f"loss_DnCNN_model_{str(num_epochs)}_epoch_{str(num_scans)}_scans_{str(batch_size)}_batch_size_{str(lr)}_lr_{str(noise_level)}_noise_level",
+            np.array(loss_arr),
+        )
         print(f"Epoch [{epoch + 1}],  loss:{epoch_loss / len(train_loader)}")
     torch.save(
         model,
@@ -73,7 +77,10 @@ if __name__ == "__main__":
     dataset = TrainDataset(data_path=Path(args.data_path), num_scans=args.num_scans)
     train_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     model = DnCNN()
-    model.load_state_dict(torch.load(Path(f"model/pretrained/DnCNN/dncnn_{args.noise_level}.pth")), strict=True)
+    model.load_state_dict(
+        torch.load(Path(f"model/pretrained/DnCNN/dncnn_{args.noise_level}.pth")),
+        strict=True,
+    )
     model = model.to("cpu")
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
@@ -86,5 +93,5 @@ if __name__ == "__main__":
         num_epochs=args.num_epochs,
         batch_size=args.batch_size,
         lr=args.lr,
-        noise_level=args.noise_level
+        noise_level=args.noise_level,
     )

@@ -1,36 +1,19 @@
 import math
 from pathlib import Path
 import numpy as np
-import scipy
 import torch
-from numpy import ndarray
-from pydicom import dcmread
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from scipy.interpolate import CubicSpline
 from torch.autograd import Variable
 import itertools
 
-path = (
-    Path().resolve().parents[2]
-    / "dane"
-    / "KARDIO ZAMKNIETE"
-    / "A001"
-    / "DICOM"
-    / "P1"
-    / "E1"
-    / "S1"
-)
 
-
-def get_data(
-    data_path: Path,
-    num_scans: int = 10
-) :
+def get_data(data_path: Path, num_scans: int = 10):
     """
     Return array with CT image data
     """
-    data =  np.stack(
+    data = np.stack(
         [
             np.load(file)
             for file in itertools.islice(data_path.glob("*.npy"), num_scans)
@@ -39,9 +22,7 @@ def get_data(
     )
     min = get_min(data)
     max = get_max(data)
-    print(min,max)
-    return min, max, np.clip((data-min)*1/(max-min),0,1)
-
+    return min, max, np.clip((data - min) * 1 / (max - min), 0, 1)
 
 
 def get_rect_ROI(
@@ -310,13 +291,13 @@ def load_array(file_name):
     return np.load(Path("output/data") / file_name)
 
 
-def add_noise(image, min, max):
+def add_noise(image, min, max, noise_level):
     """
     Add random Gaussian noise to the input image.
     """
     # noise_norm_level = np.clip((noise_level - min) * 1 / (max - min), 0, 1)
     # noise = Variable(image.data.new(image.size()).normal_(0, noise_norm_level))
-    noise = Variable(image.data.new(image.size()).normal_(0, 0.025))
+    noise = Variable(image.data.new(image.size()).normal_(0, noise_level / 255.0))
     noisy_image = image + noise
 
     return noisy_image, noise
@@ -328,6 +309,7 @@ def get_max(images: np.ndarray):
     """
 
     return np.max(images)
+
 
 def get_min(images: np.ndarray):
     """
@@ -347,14 +329,14 @@ def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):
 
 def calculate_psnr(img1, img2, border=0):
     if not img1.shape == img2.shape:
-        raise ValueError('Input images must have the same dimensions.')
+        raise ValueError("Input images must have the same dimensions.")
     h, w = img1.shape[:2]
-    img1 = img1[border:h-border, border:w-border]
-    img2 = img2[border:h-border, border:w-border]
+    img1 = img1[border : h - border, border : w - border]
+    img2 = img2[border : h - border, border : w - border]
 
     img1 = img1.astype(np.float64)
     img2 = img2.astype(np.float64)
-    mse = np.mean((img1 - img2)**2)
+    mse = np.mean((img1 - img2) ** 2)
     if mse == 0:
-        return float('inf')
-    return 10 * math.log10(np.max(img1)**2/ mse)
+        return float("inf")
+    return 10 * math.log10(np.max(img1) ** 2 / mse)
