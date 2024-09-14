@@ -79,31 +79,31 @@ def evaluate_pretrained_models_nps(
         image_denoised_pytorch = model(image_test_pytorch)
         image_denoised_numpy = torch_to_np(image_denoised_pytorch)
         ROI_array_rectangle_noise = get_rect_ROI(
-            image=np.flipud(image_denoised_numpy), y=75, x=55, size=8, num=9, plot=False
+            image=np.flipud(image_denoised_numpy), y=55, x=55, size=8, num=9, plot=False
         )
         NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
         rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
 
         x_interpolate = np.linspace(0, 1.6, 64)
         cubic_spline = CubicSpline(rad_noise, intensity_noise)
-        plt.plot(rad_noise, intensity_noise, ".", color=color)
+        plt.plot(rad_noise, intensity_noise /max(intensity_noise), ".", color=color)
         plt.plot(
             x_interpolate,
-            cubic_spline(x_interpolate),
+            cubic_spline(x_interpolate) / max( cubic_spline(x_interpolate)),
             label=f"model DnCNN $\sigma=$ {sigma}",
             color=color,
         )
     ROI_array_rectangle_noise = get_rect_ROI(
-        image=np.flipud(image_test), y=75, x=55, size=8, num=9, plot=False
+        image=np.flipud(image_test), y=55, x=55, size=8, num=9, plot=False
     )
     NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
     rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
 
     x_interpolate = np.linspace(0, 1.6, 64)
     cubic_spline = CubicSpline(rad_noise, intensity_noise)
-    plt.plot(rad_noise, intensity_noise, ".", color=colors[-1])
+    plt.plot(rad_noise, intensity_noise /max(intensity_noise), ".", color=colors[-1])
     plt.plot(
-        x_interpolate, cubic_spline(x_interpolate), label="test image", color=colors[-1]
+        x_interpolate,   cubic_spline(x_interpolate) / max( cubic_spline(x_interpolate)), label="test image", color=colors[-1]
     )
     plt.title("Noise Power Spectrum ")
     plt.ylabel(r"NPS $ \left[ HU^{2}mm^{2} \right]$")

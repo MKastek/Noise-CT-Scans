@@ -9,14 +9,19 @@ from torch.autograd import Variable
 import itertools
 
 
-def get_data(data_path: Path, num_scans: int = 10):
+def get_data(data_path: Path, num_scans: int = 10,
+             roi_row=slice(30, 130),
+             roi_column=slice(250, 350)
+             ):
     """
     Return array with CT image data
     """
+
+
     data = np.stack(
         [
-            np.load(file)
-            for file in itertools.islice(data_path.glob("*.npy"), num_scans)
+            np.load(file)[roi_row, roi_column]
+            for file in list(data_path.glob("*.npy"))[:num_scans]
         ],
         axis=0,
     )
@@ -315,7 +320,7 @@ def get_min(images: np.ndarray):
     """
     Get maximum value from all images in given folders
     """
-    return np.min(images[(images != -2048) & (images != -2049)])
+    return np.min(images)
 
 
 def nrmse(recon_img: np.ndarray, reference_img: np.ndarray):

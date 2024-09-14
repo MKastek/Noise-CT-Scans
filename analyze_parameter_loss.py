@@ -15,10 +15,10 @@ def init_analyze_loss_parser():
         "--model", help="Check parameter", type=str, default="DnCNN"
     )
     parser.add_argument(
-        "--num_scans", help="Number of CT scans", type=int, default=1000,
+        "--num_scans", help="Number of CT scans", type=int, default=5000,
     )
     parser.add_argument(
-        "--num_epochs", help="Number of epochs", type=int, default=10,
+        "--num_epochs", help="Number of epochs", type=int, default=20,
     )
     parser.add_argument("--batch_size", help="Batch size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=0.0001)

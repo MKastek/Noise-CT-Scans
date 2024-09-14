@@ -6,7 +6,7 @@ from utils import get_NPS_2D, get_data, get_rect_ROI, get_NPS_1D, make_plot
 
 if __name__ == "__main__":
     path = (
-        Path().resolve().parents[1]
+        Path().resolve().parents[0]
         / "dane"
         / "KARDIO ZAMKNIETE"
         / "A001"

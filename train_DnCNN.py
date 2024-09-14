@@ -14,19 +14,19 @@ import numpy as np
 def init_dncnn_parser():
     parser = argparse.ArgumentParser(description="Training DnCNN")
     parser.add_argument(
-        "--num_scans", help="Number of CT scans", type=int, default=1000,
+        "--num_scans", help="Number of CT scans", type=int, default=5,
     )
     parser.add_argument(
-        "--num_epochs", help="Number of epochs", type=int, default=10,
+        "--num_epochs", help="Number of epochs", type=int, default=1,
     )
-    parser.add_argument("--batch_size", help="Batch size", type=int, default=64)
+    parser.add_argument("--batch_size", help="Batch size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=0.0001)
     parser.add_argument("--data_path", type=str, default="data/train_dataset")
-    parser.add_argument("--noise_level", type=int, default=25)
+    parser.add_argument("--noise_level", type=int, default=15)
     parser.add_argument(
         "--pretrained_model_path",
         type=str,
-        default="model/pretrained/DnCNN/dncnn_25.pth",
+        default="model/pretrained/DnCNN/",
     )
     return parser
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
     model = DnCNN()
     model.load_state_dict(
-        torch.load(Path(f"model/pretrained/DnCNN/dncnn_{args.noise_level}.pth")),
+        torch.load(Path(f"{args.pretrained_model_path}dncnn_{args.noise_level}.pth")),
         strict=True,
     )
     model = model.to("cpu")

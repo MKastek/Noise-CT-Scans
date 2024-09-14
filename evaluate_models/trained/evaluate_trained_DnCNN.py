@@ -16,22 +16,32 @@ from utils import (
     get_NPS_1D,
 )
 
+plt.rcParams["image.cmap"] = "gray"
 
 def evaluate_trained_model(
     model,
     pretrained_model_path: Path,
     data_path: Path,
     data_index: int,
-    roi_row: slice,
-    roi_column: slice,
+    noise_level: int
 ):
-    _, _, images = get_data(data_path)
+    _, _, images = get_data(data_path, num_scans=1000)
 
-    image_test = images[data_index][roi_row, roi_column]
+    psnr = []
+    for image in images:
+        image_test_pytorch = torch.from_numpy(image).float().unsqueeze(0)
+        image_denoised_pytorch = model(image_test_pytorch)
+        image_denoised_numpy = torch_to_np(image_denoised_pytorch)
+        psnr.append(calculate_psnr(image, image_denoised_numpy))
+    psnr_np = np.array(psnr)
+    print(f"min:{np.min(psnr_np):.2f}({np.argmin(psnr_np)}), max:{np.max(psnr_np):.2f}({np.argmax(psnr_np)}), avg:{np.average(psnr_np):.2f}")
+
+
+    image_test = images[data_index]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
-    plt.suptitle(fr"Test of trained model DnCNN")
+    plt.suptitle(fr"Test of trained model DnCNN $\sigma$={noise_level}",fontsize=20)
     plt.subplot(131)
-    plt.title("Test image")
+    plt.title("Test image", fontsize=18)
     plt.imshow(image_test)
     plt.xticks([])
     plt.yticks([])
@@ -47,18 +57,21 @@ def evaluate_trained_model(
     image_denoised_pretrained_numpy = torch_to_np(image_denoised_pretrained_pytorch)
 
     plt.subplot(132)
-    plt.title("Denoised image - pretrained DnCNN")
+    plt.title("Denoised image - pretrained DnCNN", fontsize=18)
     plt.imshow(image_denoised_pretrained_numpy)
     plt.xlabel(
-        f"PSNR = {calculate_psnr(image_test, image_denoised_pretrained_numpy):.2f} dB"
+        f"PSNR = {calculate_psnr(image_test, image_denoised_pretrained_numpy):.2f} dB",
+        fontsize=18
     )
     plt.xticks([])
     plt.yticks([])
 
     plt.subplot(133)
-    plt.title("Denoised image - fine-tuned DnCNN")
+    plt.title("Denoised image - fine-tuned DnCNN", fontsize=18)
     plt.imshow(image_denoised_numpy)
-    plt.xlabel(f"PSNR = {calculate_psnr(image_test, image_denoised_numpy):.2f} dB")
+    plt.xlabel(f"PSNR = {calculate_psnr(image_test, image_denoised_numpy):.2f} dB",
+               fontsize=18
+               )
     plt.xticks([])
     plt.yticks([])
 
@@ -68,7 +81,7 @@ def evaluate_trained_model(
     plt.show()
 
     ROI_trained = get_rect_ROI(
-        image=np.flipud(image_denoised_numpy), y=5, x=5, size=8, num=9, plot=True
+        image=np.flipud(image_denoised_numpy), y=55, x=55, size=8, num=9, plot=True
     )
     plt.show()
     NPS_2D_trained = get_NPS_2D(ROI_trained)
@@ -76,8 +89,7 @@ def evaluate_trained_model(
 
     ROI_pretrained = get_rect_ROI(
         image=np.flipud(image_denoised_pretrained_numpy),
-        y=5,
-        x=5,
+        y=55, x=55,
         size=8,
         num=9,
         plot=True,
@@ -122,9 +134,50 @@ def evaluate_trained_model(
     plt.legend()
     plt.show()
 
+    plt.subplot(121)
+    plt.title("Test image", fontsize=18)
+    plt.imshow(image_test)
+    plt.xticks([])
+    plt.yticks([])
+
+
+    plt.subplot(122)
+    plt.title("Denoised image - fine-tuned DnCNN", fontsize=18)
+    plt.imshow(image_denoised_numpy)
+    plt.xlabel(f"PSNR = {calculate_psnr(image_test, image_denoised_numpy):.2f} dB",
+               fontsize=18
+               )
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.show()
+
+
+
+    plt.subplot(121)
+    plt.title("Denoised image - pretrained DnCNN", fontsize=18)
+    plt.imshow(image_denoised_pretrained_numpy)
+    plt.xlabel(
+        f"PSNR = {calculate_psnr(image_test, image_denoised_pretrained_numpy):.2f} dB",
+        fontsize=18
+    )
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.subplot(122)
+    plt.title("Denoised image - fine-tuned DnCNN", fontsize=18)
+    plt.imshow(image_denoised_numpy)
+    plt.xlabel(f"PSNR = {calculate_psnr(image_test, image_denoised_numpy):.2f} dB",
+               fontsize=18
+               )
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.show()
 
 if __name__ == "__main__":
     model = DnCNN()
+    noise_level = 50
     trained_model_path = Path().resolve().parents[1] / "model" / "saved"
     data_path = Path().resolve().parents[1] / "data" / "test_dataset"
 
@@ -136,14 +189,13 @@ if __name__ == "__main__":
         Path().resolve().parents[1]
         / "model"
         / "saved"
-        / "DnCNN_model_10_epoch_5000_scans_64_batch_size_0.0001_lr_25_noise_level.pt"
+        / f"DnCNN_model_10_epoch_5000_scans_64_batch_size_0.0001_lr_{noise_level}_noise_level.pt"
     )
 
     evaluate_trained_model(
         model=model_trained,
-        pretrained_model_path=pretrained_model_path / "dncnn_25.pth",
+        pretrained_model_path=pretrained_model_path / f"dncnn_{noise_level}.pth",
         data_path=data_path,
-        data_index=4,
-        roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
+        data_index=745,
+        noise_level=noise_level
     )
