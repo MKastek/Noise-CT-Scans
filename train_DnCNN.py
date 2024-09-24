@@ -24,9 +24,7 @@ def init_dncnn_parser():
     parser.add_argument("--data_path", type=str, default="data/train_dataset")
     parser.add_argument("--noise_level", type=int, default=15)
     parser.add_argument(
-        "--pretrained_model_path",
-        type=str,
-        default="model/pretrained/DnCNN/",
+        "--pretrained_model_path", type=str, default="model/pretrained/DnCNN/",
     )
     return parser
 

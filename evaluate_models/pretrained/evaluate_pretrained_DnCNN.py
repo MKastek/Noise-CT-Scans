@@ -21,19 +21,14 @@ plt.rcParams["image.cmap"] = "gray"
 
 
 def evaluate_pretrained_model(
-    model,
-    model_path: Path,
-    data_path: Path,
-    data_index: int,
-    roi_row: slice,
-    roi_column: slice,
+    model, model_path: Path, data_path: Path, data_index: int,
 ):
     model.load_state_dict(torch.load(model_path), strict=True)
     model.eval()
     for k, v in model.named_parameters():
         v.requires_grad = False
     _, _, images = get_data(data_path)
-    image_test = images[data_index][roi_row, roi_column]
+    image_test = images[data_index]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
     sigma = int(re.findall(r"\d+", model_path.name)[0])
     plt.suptitle(fr"Test of model DnCNN $ \sigma={sigma}$")
@@ -59,16 +54,10 @@ def evaluate_pretrained_model(
 
 
 def evaluate_pretrained_models_nps(
-    model,
-    models_path: list[Path],
-    colors: list[str],
-    data_path: Path,
-    data_index: int,
-    roi_row: slice,
-    roi_column: slice,
+    model, models_path: list[Path], colors: list[str], data_path: Path, data_index: int
 ):
     _, _, images = get_data(data_path)
-    image_test = images[data_index][roi_row, roi_column]
+    image_test = images[data_index]
     image_test_pytorch = torch.from_numpy(image_test).float().unsqueeze(0)
     for model_path, color in zip(models_path, colors):
         model.load_state_dict(torch.load(model_path), strict=True)
@@ -79,36 +68,36 @@ def evaluate_pretrained_models_nps(
         image_denoised_pytorch = model(image_test_pytorch)
         image_denoised_numpy = torch_to_np(image_denoised_pytorch)
         ROI_array_rectangle_noise = get_rect_ROI(
-            image=np.flipud(image_denoised_numpy), y=55, x=55, size=8, num=9, plot=False
+            image=np.flipud(image_denoised_numpy), y=75, x=55, size=8, num=9, plot=False
         )
         NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
         rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
 
         x_interpolate = np.linspace(0, 1.6, 64)
         cubic_spline = CubicSpline(rad_noise, intensity_noise)
-        plt.plot(rad_noise, intensity_noise /max(intensity_noise), ".", color=color)
+        plt.plot(rad_noise, intensity_noise, ".", color=color)
         plt.plot(
             x_interpolate,
-            cubic_spline(x_interpolate) / max( cubic_spline(x_interpolate)),
+            cubic_spline(x_interpolate),
             label=f"model DnCNN $\sigma=$ {sigma}",
             color=color,
         )
     ROI_array_rectangle_noise = get_rect_ROI(
-        image=np.flipud(image_test), y=55, x=55, size=8, num=9, plot=False
+        image=np.flipud(image_test), y=75, x=55, size=8, num=9, plot=False
     )
     NPS_2D_rectangle_noise = get_NPS_2D(ROI_array_rectangle_noise)
     rad_noise, intensity_noise = get_NPS_1D(NPS_2D_rectangle_noise)
 
     x_interpolate = np.linspace(0, 1.6, 64)
     cubic_spline = CubicSpline(rad_noise, intensity_noise)
-    plt.plot(rad_noise, intensity_noise /max(intensity_noise), ".", color=colors[-1])
+    plt.plot(rad_noise, intensity_noise, ".", color=colors[-1])
     plt.plot(
-        x_interpolate,   cubic_spline(x_interpolate) / max( cubic_spline(x_interpolate)), label="test image", color=colors[-1]
+        x_interpolate, cubic_spline(x_interpolate), label="test image", color=colors[-1]
     )
     plt.title("Noise Power Spectrum ")
     plt.ylabel(r"NPS $ \left[ HU^{2}mm^{2} \right]$")
     plt.xlabel("$f_{r} [mm^{-1}]$")
-    plt.xlim(0, 1.6)
+    plt.xlim(0, 1.4)
     plt.grid(which="minor", alpha=0.3)
     plt.grid(which="major", alpha=0.7)
     plt.legend()
@@ -128,24 +117,18 @@ if __name__ == "__main__":
         model_path=pretrained_model_path / "dncnn_15.pth",
         data_path=data_path,
         data_index=2,
-        roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
     )
     evaluate_pretrained_model(
         model=DnCNN(),
         model_path=pretrained_model_path / "dncnn_25.pth",
         data_path=data_path,
         data_index=2,
-        roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
     )
     evaluate_pretrained_model(
         model=DnCNN(),
         model_path=pretrained_model_path / "dncnn_50.pth",
         data_path=data_path,
         data_index=2,
-        roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
     )
     evaluate_pretrained_models_nps(
         model=DnCNN(),
@@ -157,6 +140,4 @@ if __name__ == "__main__":
         colors=["red", "green", "blue", "gray"],
         data_path=data_path,
         data_index=2,
-        roi_row=slice(30, 130),
-        roi_column=slice(250, 350),
     )

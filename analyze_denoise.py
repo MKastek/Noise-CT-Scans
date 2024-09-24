@@ -34,16 +34,25 @@ def analyze_psnr(images):
     psnr_gaussian_3 = np.array([])
     psnr_gaussian_5 = np.array([])
     for image in images:
-        np.append(psnr_mean_3, calculate_psnr(image, apply_mean_filter(image, 3)))
-        np.append(psnr_mean_5, calculate_psnr(image, apply_mean_filter(image, 5)))
-        np.append(psnr_median_3, calculate_psnr(image, apply_median_filter(image, 3)))
-        np.append(psnr_median_5, calculate_psnr(image, apply_median_filter(image, 5)))
-        np.append(
+        psnr_mean_3 = np.append(
+            psnr_mean_3, calculate_psnr(image, apply_mean_filter(image, 3))
+        )
+        psnr_mean_5 = np.append(
+            psnr_mean_5, calculate_psnr(image, apply_mean_filter(image, 5))
+        )
+        psnr_median_3 = np.append(
+            psnr_median_3, calculate_psnr(image, apply_median_filter(image, 3))
+        )
+        psnr_median_5 = np.append(
+            psnr_median_5, calculate_psnr(image, apply_median_filter(image, 5))
+        )
+        psnr_gaussian_3 = np.append(
             psnr_gaussian_3, calculate_psnr(image, apply_gaussian_filter(image, 3, 0))
         )
-        np.append(
+        psnr_gaussian_5 = np.append(
             psnr_gaussian_5, calculate_psnr(image, apply_gaussian_filter(image, 5, 0))
         )
+
     print_array("Mean filter(3x3)", psnr_mean_3)
     print_array("Mean filter(5x5)", psnr_mean_5)
     print_array("Median filter(3x3)", psnr_median_3)
@@ -51,8 +60,40 @@ def analyze_psnr(images):
     print_array("Gaussian filter(3x3)", (psnr_gaussian_3))
     print_array("Gaussian filter(5x5)", psnr_gaussian_5)
 
+    medianprops = dict(linewidth=2.5)
+    data = [
+        psnr_mean_3,
+        psnr_mean_5,
+        psnr_median_3,
+        psnr_median_5,
+        psnr_gaussian_3,
+        psnr_gaussian_5,
+    ]
+    labels = [
+        "Mean (3x3)",
+        "Mean (5x5)",
+        "Median (3x3)",
+        "Median (5x5)",
+        "Gaussian (3x3)",
+        "Gaussian (5x5)",
+    ]
+    plt.figure(figsize=(8, 6))
+    plt.boxplot(data, medianprops=medianprops)
+    plt.xticks(ticks=range(1, 7), labels=labels, fontsize=16)
+    plt.grid(which="minor", alpha=0.3)
+    plt.grid(which="major", alpha=0.7)
 
-def make_plot(image, denoised_image, title, title_image, title_denoised_image):
+    # Set labels and title
+    plt.title("Filters PSNR values", fontsize=20)
+    # plt.ylabel("PSNR values [dB]", fontsize=18)
+
+    # Show plot
+    plt.show()
+
+
+def make_plot(
+    image, denoised_image, title, title_image, title_denoised_image, save=False
+):
     plt.suptitle(title)
     plt.subplot(121)
     plt.title(title_image)
@@ -68,16 +109,17 @@ def make_plot(image, denoised_image, title, title_image, title_denoised_image):
     plt.subplots_adjust(
         top=0.98, bottom=0.152, left=0.031, right=0.97, hspace=0.122, wspace=0.063
     )
-    plt.savefig(
-        f"ch05_{ title.replace(' ','_') +title_denoised_image.replace(' ','_')}.png"
-    )
+    if save:
+        plt.savefig(
+            f"ch05_{ title.replace(' ','_') +title_denoised_image.replace(' ','_')}.png"
+        )
 
 
 if __name__ == "__main__":
     data_path = Path() / "data" / "train_dataset"
-    _, _, images = get_data(data_path, num_scans=10)
+    _, _, images = get_data(data_path, num_scans=1000)
     test_image = images[2]
-
+    analyze_psnr(images[:1000])
     make_plot(
         test_image,
         apply_mean_filter(test_image, 3),
@@ -125,4 +167,3 @@ if __name__ == "__main__":
         "Test image",
         "Denoised image with (5x5) fiter",
     )
-    analyze_psnr(images[:1000])

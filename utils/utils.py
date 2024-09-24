@@ -9,14 +9,15 @@ from torch.autograd import Variable
 import itertools
 
 
-def get_data(data_path: Path, num_scans: int = 10,
-             roi_row=slice(30, 130),
-             roi_column=slice(250, 350)
-             ):
+def get_data(
+    data_path: Path,
+    num_scans: int = 10,
+    roi_row=slice(30, 130),
+    roi_column=slice(250, 350),
+):
     """
     Return array with CT image data
     """
-
 
     data = np.stack(
         [
@@ -345,3 +346,9 @@ def calculate_psnr(img1, img2, border=0):
     if mse == 0:
         return float("inf")
     return 10 * math.log10(np.max(img1) ** 2 / mse)
+
+
+def get_dft(image: np.ndarray):
+    dft = np.fft.fft2(image)
+    shifted_dft = np.fft.fftshift(dft)
+    return np.abs(shifted_dft) ** 2
