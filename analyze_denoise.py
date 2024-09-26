@@ -43,27 +43,34 @@ class PSNRAnalyzer:
     def _calculate_psnr_for_filters(self):
         for image in self.images:
             self.psnr_results["mean_3"] = np.append(
-                self.psnr_results["mean_3"], calculate_psnr(image, Filter.apply_mean(image, 3))
+                self.psnr_results["mean_3"],
+                calculate_psnr(image, Filter.apply_mean(image, 3)),
             )
             self.psnr_results["mean_5"] = np.append(
-                self.psnr_results["mean_5"], calculate_psnr(image, Filter.apply_mean(image, 5))
+                self.psnr_results["mean_5"],
+                calculate_psnr(image, Filter.apply_mean(image, 5)),
             )
             self.psnr_results["median_3"] = np.append(
-                self.psnr_results["median_3"], calculate_psnr(image, Filter.apply_median(image, 3))
+                self.psnr_results["median_3"],
+                calculate_psnr(image, Filter.apply_median(image, 3)),
             )
             self.psnr_results["median_5"] = np.append(
-                self.psnr_results["median_5"], calculate_psnr(image, Filter.apply_median(image, 5))
+                self.psnr_results["median_5"],
+                calculate_psnr(image, Filter.apply_median(image, 5)),
             )
             self.psnr_results["gaussian_3"] = np.append(
-                self.psnr_results["gaussian_3"], calculate_psnr(image, Filter.apply_gaussian(image, 3, 0))
+                self.psnr_results["gaussian_3"],
+                calculate_psnr(image, Filter.apply_gaussian(image, 3, 0)),
             )
             self.psnr_results["gaussian_5"] = np.append(
-                self.psnr_results["gaussian_5"], calculate_psnr(image, Filter.apply_gaussian(image, 5, 0))
+                self.psnr_results["gaussian_5"],
+                calculate_psnr(image, Filter.apply_gaussian(image, 5, 0)),
             )
 
     def _print_array(self, name, arr):
         print(
-            f"{name} min:{np.min(arr):.2f}({np.argmin(arr)}), max:{np.max(arr):.2f}({np.argmax(arr)}), avg:{np.average(arr):.2f}")
+            f"{name} min:{np.min(arr):.2f}({np.argmin(arr)}), max:{np.max(arr):.2f}({np.argmax(arr)}), avg:{np.average(arr):.2f}"
+        )
 
     def analyze(self):
         """Analyze and print PSNR values for each filter."""
@@ -86,7 +93,7 @@ class PSNRAnalyzer:
             self.psnr_results["median_3"],
             self.psnr_results["median_5"],
             self.psnr_results["gaussian_3"],
-            self.psnr_results["gaussian_5"]
+            self.psnr_results["gaussian_5"],
         ]
         labels = [
             "Mean (3x3)",
@@ -94,7 +101,7 @@ class PSNRAnalyzer:
             "Median (3x3)",
             "Median (5x5)",
             "Gaussian (3x3)",
-            "Gaussian (5x5)"
+            "Gaussian (5x5)",
         ]
         plt.figure(figsize=(8, 6))
         plt.boxplot(data, medianprops=medianprops)
@@ -110,7 +117,9 @@ class Plotter:
     """Class to handle plotting images and results."""
 
     @staticmethod
-    def make_plot(image, denoised_image, title, title_image, title_denoised_image, save=False):
+    def make_plot(
+        image, denoised_image, title, title_image, title_denoised_image, save=False
+    ):
         """Plot the original and denoised images side by side."""
         plt.suptitle(title)
         plt.subplot(121)
@@ -130,7 +139,9 @@ class Plotter:
             top=0.98, bottom=0.152, left=0.031, right=0.97, hspace=0.122, wspace=0.063
         )
         if save:
-            plt.savefig(f"ch05_{title.replace(' ', '_') + title_denoised_image.replace(' ', '_')}.png")
+            plt.savefig(
+                f"ch05_{title.replace(' ', '_') + title_denoised_image.replace(' ', '_')}.png"
+            )
         else:
             plt.show()
 
@@ -155,7 +166,7 @@ if __name__ == "__main__":
         "Median (3x3)": Filter.apply_median(test_image, 3),
         "Median (5x5)": Filter.apply_median(test_image, 5),
         "Gaussian (3x3)": Filter.apply_gaussian(test_image, 3, 0),
-        "Gaussian (5x5)": Filter.apply_gaussian(test_image, 5, 0)
+        "Gaussian (5x5)": Filter.apply_gaussian(test_image, 5, 0),
     }
 
     for title, denoised_image in filters.items():
@@ -164,5 +175,5 @@ if __name__ == "__main__":
             denoised_image,
             f"Denoised image with {title} filter",
             "Test image",
-            f"Denoised image with {title} filter"
+            f"Denoised image with {title} filter",
         )
